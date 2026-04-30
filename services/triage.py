@@ -178,19 +178,15 @@ def triage_suggestion(confidence: float, symptoms: list[str]) -> str:
     return "📋 Monitor your symptoms and rest"
 
 def needs_followup(symptoms: list[str], confidence: float) -> dict | None:
-    if len(symptoms) < 2:
+    # Only ask ONE follow-up: when no symptoms could be extracted at all.
+    # Otherwise show results immediately — fewer round-trips = better UX.
+    if len(symptoms) == 0:
         return {
             "type": "more_symptoms",
-            "question": "I'd like to give you a better assessment. Could you describe any other symptoms you're experiencing?",
-        }
-    if confidence < 0.35:
-        return {
-            "type": "duration",
-            "question": "How long have you been experiencing these symptoms?",
-        }
-    if confidence < 0.50:
-        return {
-            "type": "severity",
-            "question": "Would you say the symptoms are mild, moderate, or severe?",
+            "question": (
+                "I wasn't able to identify specific symptoms from that. "
+                "Could you describe what you're feeling in more detail? "
+                "For example: \"I have a headache, fever, and body ache.\""
+            ),
         }
     return None
