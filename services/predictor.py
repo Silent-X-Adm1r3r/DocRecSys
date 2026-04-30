@@ -1,143 +1,84 @@
 """
-Disease Predictor Service
-Simulates a BERT-based prediction model using rule-based symptom→disease
-mapping with weighted scoring.  Returns top-2 predictions filtered by a
-confidence threshold.
+Disease Predictor — Uses ML engine for real AI-powered predictions.
+Falls back to enhanced rule-based scoring if model isn't available.
 """
-
 from __future__ import annotations
+import os, logging
+from services.ml_engine import MLEngine
+from services.symptom_extractor import get_display_name
 
-# ── Disease knowledge base ──────────────────────────────────────────
-# Each disease maps to a dict of { symptom: weight }.
-# Weights roughly represent how indicative that symptom is (0–1).
+logger = logging.getLogger(__name__)
 
-DISEASE_SYMPTOMS: dict[str, dict[str, float]] = {
-    "Common Cold": {
-        "cough": 0.7, "sneezing": 0.8, "runny nose": 0.9,
-        "sore throat": 0.6, "headache": 0.3, "fatigue": 0.3,
-        "watery eyes": 0.5, "fever": 0.3, "chills": 0.3,
-    },
-    "Influenza (Flu)": {
-        "fever": 0.9, "cough": 0.7, "body ache": 0.8,
-        "fatigue": 0.7, "headache": 0.6, "chills": 0.7,
-        "sore throat": 0.4, "runny nose": 0.3, "sweating": 0.5,
-        "muscle pain": 0.7, "loss of appetite": 0.4,
-    },
-    "COVID-19": {
-        "fever": 0.8, "cough": 0.8, "fatigue": 0.7,
-        "shortness of breath": 0.8, "body ache": 0.5,
-        "sore throat": 0.5, "headache": 0.5, "loss of appetite": 0.5,
-        "diarrhea": 0.3, "chills": 0.4,
-    },
-    "Gastroenteritis": {
-        "nausea": 0.8, "vomiting": 0.9, "diarrhea": 0.9,
-        "abdominal pain": 0.7, "stomach pain": 0.7,
-        "fever": 0.4, "fatigue": 0.4, "loss of appetite": 0.5,
-        "bloating": 0.4, "headache": 0.2,
-    },
-    "Migraine": {
-        "headache": 0.95, "nausea": 0.6, "blurred vision": 0.6,
-        "dizziness": 0.5, "fatigue": 0.3, "sensitivity to light": 0.7,
-    },
-    "Hypertension": {
-        "headache": 0.5, "dizziness": 0.6, "blurred vision": 0.5,
-        "chest pain": 0.4, "shortness of breath": 0.4,
-        "palpitations": 0.5, "high blood pressure": 1.0,
-        "fatigue": 0.3, "nausea": 0.2,
-    },
-    "Dengue Fever": {
-        "fever": 0.9, "headache": 0.7, "body ache": 0.8,
-        "joint pain": 0.8, "skin rash": 0.6, "fatigue": 0.6,
-        "nausea": 0.5, "vomiting": 0.4, "muscle pain": 0.7,
-        "loss of appetite": 0.5,
-    },
-    "Typhoid": {
-        "fever": 0.9, "headache": 0.6, "abdominal pain": 0.7,
-        "fatigue": 0.7, "loss of appetite": 0.6, "diarrhea": 0.5,
-        "constipation": 0.4, "sweating": 0.4, "chills": 0.4,
-    },
-    "Urinary Tract Infection": {
-        "frequent urination": 0.9, "abdominal pain": 0.5,
-        "blood in urine": 0.7, "fever": 0.4, "back pain": 0.4,
-        "dark urine": 0.6, "nausea": 0.3,
-    },
-    "Pneumonia": {
-        "cough": 0.8, "fever": 0.8, "shortness of breath": 0.8,
-        "chest pain": 0.7, "fatigue": 0.6, "chills": 0.6,
-        "sweating": 0.5, "loss of appetite": 0.4,
-        "body ache": 0.4, "headache": 0.3,
-    },
-    "Allergic Rhinitis": {
-        "sneezing": 0.9, "runny nose": 0.8, "watery eyes": 0.8,
-        "itching": 0.6, "sore throat": 0.3, "headache": 0.3,
-        "fatigue": 0.2,
-    },
-    "Malaria": {
-        "fever": 0.9, "chills": 0.8, "sweating": 0.7,
-        "headache": 0.6, "body ache": 0.6, "nausea": 0.5,
-        "vomiting": 0.5, "fatigue": 0.7, "joint pain": 0.4,
-    },
-    "Jaundice": {
-        "yellow skin": 0.95, "dark urine": 0.8, "fatigue": 0.6,
-        "nausea": 0.5, "abdominal pain": 0.5, "loss of appetite": 0.6,
-        "fever": 0.3, "itching": 0.4, "vomiting": 0.3,
-    },
-    "Anxiety Disorder": {
-        "anxiety": 0.9, "palpitations": 0.6, "insomnia": 0.7,
-        "dizziness": 0.4, "sweating": 0.4, "fatigue": 0.5,
-        "headache": 0.3, "nausea": 0.3, "numbness": 0.3,
-        "shortness of breath": 0.3,
-    },
-    "Diabetes (Type 2)": {
-        "frequent urination": 0.8, "fatigue": 0.6,
-        "blurred vision": 0.5, "weight loss": 0.6,
-        "numbness": 0.5, "tingling": 0.5, "loss of appetite": 0.3,
-    },
-}
+_MODEL_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "models")
+_engine: MLEngine | None = None
 
-# Severity multiplier
 SEVERITY_MULTIPLIER = {"severe": 1.15, "moderate": 1.0, "mild": 0.9}
 
-CONFIDENCE_THRESHOLD = 0.20  # ignore predictions below 20 %
-
+def _get_engine() -> MLEngine:
+    global _engine
+    if _engine is None:
+        _engine = MLEngine(_MODEL_DIR)
+    return _engine
 
 def predict_diseases(
     symptoms: list[str],
     severity: str | None = None,
     duration: str | None = None,
+    top_n: int = 3,
 ) -> list[dict]:
     """
-    Return up to 2 predictions sorted by confidence, each dict has:
-        { "disease": str, "confidence": float }
-    Confidence is 0-1.
+    Return up to top_n predictions, each:
+    { disease, confidence, confidence_pct, matching_symptoms, explanation }
     """
     if not symptoms:
         return []
 
-    scores: dict[str, float] = {}
+    engine = _get_engine()
 
-    for disease, symptom_weights in DISEASE_SYMPTOMS.items():
-        total_weight = sum(symptom_weights.values())
-        matched_weight = sum(
-            symptom_weights[s] for s in symptoms if s in symptom_weights
-        )
-        if matched_weight == 0:
-            continue
-        raw_confidence = matched_weight / total_weight
+    if engine.is_loaded:
+        results = engine.predict(symptoms, top_n=top_n)
+    else:
+        results = _fallback_predict(symptoms, top_n)
 
-        # Apply severity modifier
-        if severity:
-            raw_confidence *= SEVERITY_MULTIPLIER.get(severity, 1.0)
+    # Apply severity modifier
+    if severity and severity in SEVERITY_MULTIPLIER:
+        mult = SEVERITY_MULTIPLIER[severity]
+        for r in results:
+            r["confidence"] = min(round(r["confidence"] * mult, 3), 1.0)
 
-        # Clamp to 1.0
-        scores[disease] = min(raw_confidence, 1.0)
+    # Add display info
+    for r in results:
+        r["confidence_pct"] = f"{round(r['confidence'] * 100)}%"
+        r["explanation_symptoms"] = [get_display_name(s) for s in r.get("matching_symptoms", symptoms)]
 
-    # Filter by threshold
-    filtered = {d: c for d, c in scores.items() if c >= CONFIDENCE_THRESHOLD}
-    if not filtered:
-        return []
+    # Filter very low confidence
+    results = [r for r in results if r["confidence"] >= 0.05]
 
-    # Sort descending and take top-2
-    sorted_diseases = sorted(filtered.items(), key=lambda x: x[1], reverse=True)[:2]
+    return results[:top_n]
 
-    return [{"disease": d, "confidence": round(c, 2)} for d, c in sorted_diseases]
+def _fallback_predict(symptoms: list[str], top_n: int) -> list[dict]:
+    """Simple rule-based fallback if ML model is unavailable."""
+    # Minimal hardcoded mappings
+    RULES = {
+        "Common Cold": ["continuous_sneezing","cough","throat_irritation","headache","fatigue","runny_nose","congestion","chills","mild_fever"],
+        "Influenza": ["high_fever","cough","body_ache","fatigue","headache","chills","sweating","muscle_pain","joint_pain"],
+        "Gastroenteritis": ["nausea","vomiting","diarrhoea","abdominal_pain","stomach_pain","fatigue","loss_of_appetite"],
+        "Migraine": ["headache","nausea","blurred_and_distorted_vision","visual_disturbances"],
+        "Hypertension": ["headache","chest_pain","breathlessness","high_bp","fatigue"],
+        "COVID-19": ["cough","high_fever","fatigue","breathlessness","headache","loss_of_smell","body_ache"],
+        "Dengue": ["high_fever","headache","body_ache","joint_pain","skin_rash","fatigue","muscle_pain","red_spots_over_body"],
+        "Malaria": ["high_fever","chills","sweating","headache","body_ache","nausea","vomiting","fatigue"],
+        "Diabetes": ["fatigue","weight_loss","excessive_hunger","blurred_and_distorted_vision","polyuria"],
+        "Anxiety Disorder": ["anxiety","restlessness","insomnia","palpitations","breathlessness","fatigue"],
+    }
+    scores = []
+    for disease, disease_symptoms in RULES.items():
+        matched = [s for s in symptoms if s in disease_symptoms]
+        if matched:
+            conf = len(matched) / len(disease_symptoms)
+            scores.append({"disease": disease, "confidence": round(conf, 3), "matching_symptoms": matched})
+    scores.sort(key=lambda x: x["confidence"], reverse=True)
+    return scores[:top_n]
+
+def get_model_info() -> dict:
+    return _get_engine().get_model_info()

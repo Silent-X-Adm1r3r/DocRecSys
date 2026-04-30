@@ -1,99 +1,80 @@
 """
-Doctor Recommender Service
-Maps predicted diseases to specialists and provides hardcoded sample
-doctor data.  Supports optional city filtering.
+Doctor Recommender — SQLite-backed with comprehensive disease-to-specialist
+mapping and multi-factor ranking.
 """
-
 from __future__ import annotations
+from services.database import get_doctors
 
-# Disease → specialist mapping
+# Comprehensive disease → specialist mapping
 DISEASE_TO_SPECIALIST: dict[str, str] = {
     "Common Cold": "General Physician",
-    "Influenza (Flu)": "General Physician",
+    "Influenza": "General Physician",
     "COVID-19": "Pulmonologist",
     "Gastroenteritis": "Gastroenterologist",
     "Migraine": "Neurologist",
     "Hypertension": "Cardiologist",
-    "Dengue Fever": "General Physician",
+    "Dengue": "General Physician",
     "Typhoid": "General Physician",
     "Urinary Tract Infection": "Urologist",
     "Pneumonia": "Pulmonologist",
+    "Allergy": "General Physician",
     "Allergic Rhinitis": "ENT Specialist",
     "Malaria": "General Physician",
     "Jaundice": "Gastroenterologist",
     "Anxiety Disorder": "Psychiatrist",
-    "Diabetes (Type 2)": "Endocrinologist",
-}
-
-# Sample doctors keyed by specialist
-DOCTORS_DB: dict[str, list[dict]] = {
-    "General Physician": [
-        {"name": "Dr. Ananya Sharma", "hospital": "Apollo Clinic", "city": "Mumbai", "contact": "+91-98765-43210"},
-        {"name": "Dr. Rajesh Kumar", "hospital": "Fortis Hospital", "city": "Delhi", "contact": "+91-98765-43211"},
-        {"name": "Dr. Priya Menon", "hospital": "Manipal Hospital", "city": "Bangalore", "contact": "+91-98765-43212"},
-    ],
-    "Pulmonologist": [
-        {"name": "Dr. Vikram Patel", "hospital": "Medanta Hospital", "city": "Delhi", "contact": "+91-98765-43213"},
-        {"name": "Dr. Sneha Reddy", "hospital": "KIMS Hospital", "city": "Hyderabad", "contact": "+91-98765-43214"},
-        {"name": "Dr. Arjun Nair", "hospital": "Aster CMI", "city": "Bangalore", "contact": "+91-98765-43215"},
-    ],
-    "Gastroenterologist": [
-        {"name": "Dr. Deepak Gupta", "hospital": "Max Hospital", "city": "Delhi", "contact": "+91-98765-43216"},
-        {"name": "Dr. Kavitha Iyer", "hospital": "Global Hospital", "city": "Mumbai", "contact": "+91-98765-43217"},
-        {"name": "Dr. Suresh Babu", "hospital": "Narayana Health", "city": "Bangalore", "contact": "+91-98765-43218"},
-    ],
-    "Neurologist": [
-        {"name": "Dr. Anil Mehta", "hospital": "AIIMS", "city": "Delhi", "contact": "+91-98765-43219"},
-        {"name": "Dr. Swati Joshi", "hospital": "Kokilaben Hospital", "city": "Mumbai", "contact": "+91-98765-43220"},
-    ],
-    "Cardiologist": [
-        {"name": "Dr. Ramesh Chandra", "hospital": "Narayana Hrudayalaya", "city": "Bangalore", "contact": "+91-98765-43221"},
-        {"name": "Dr. Pooja Saxena", "hospital": "Medanta Hospital", "city": "Delhi", "contact": "+91-98765-43222"},
-        {"name": "Dr. Kiran Desai", "hospital": "Lilavati Hospital", "city": "Mumbai", "contact": "+91-98765-43223"},
-    ],
-    "Urologist": [
-        {"name": "Dr. Manish Agarwal", "hospital": "Fortis Hospital", "city": "Delhi", "contact": "+91-98765-43224"},
-        {"name": "Dr. Nithya Rajan", "hospital": "Apollo Hospital", "city": "Chennai", "contact": "+91-98765-43225"},
-    ],
-    "ENT Specialist": [
-        {"name": "Dr. Harish Verma", "hospital": "Columbia Asia", "city": "Bangalore", "contact": "+91-98765-43226"},
-        {"name": "Dr. Sunita Das", "hospital": "Hinduja Hospital", "city": "Mumbai", "contact": "+91-98765-43227"},
-    ],
-    "Psychiatrist": [
-        {"name": "Dr. Alok Srivastava", "hospital": "NIMHANS", "city": "Bangalore", "contact": "+91-98765-43228"},
-        {"name": "Dr. Meera Kapoor", "hospital": "Fortis Mental Health", "city": "Delhi", "contact": "+91-98765-43229"},
-    ],
-    "Endocrinologist": [
-        {"name": "Dr. Sanjay Bhat", "hospital": "Manipal Hospital", "city": "Bangalore", "contact": "+91-98765-43230"},
-        {"name": "Dr. Rekha Pillai", "hospital": "Apollo Hospital", "city": "Chennai", "contact": "+91-98765-43231"},
-    ],
+    "Depression": "Psychiatrist",
+    "Diabetes": "Endocrinologist",
+    "Fungal infection": "Dermatologist",
+    "GERD": "Gastroenterologist",
+    "Chronic Cholestasis": "Gastroenterologist",
+    "Drug Reaction": "General Physician",
+    "Peptic Ulcer Disease": "Gastroenterologist",
+    "AIDS": "Infectious Disease Specialist",
+    "Bronchial Asthma": "Pulmonologist",
+    "Cervical Spondylosis": "Orthopedic Surgeon",
+    "Paralysis (Brain Hemorrhage)": "Neurologist",
+    "Chicken Pox": "General Physician",
+    "Hepatitis A": "Gastroenterologist",
+    "Hepatitis B": "Gastroenterologist",
+    "Hepatitis C": "Gastroenterologist",
+    "Hepatitis D": "Gastroenterologist",
+    "Hepatitis E": "Gastroenterologist",
+    "Alcoholic Hepatitis": "Gastroenterologist",
+    "Tuberculosis": "Pulmonologist",
+    "Heart Attack": "Cardiologist",
+    "Varicose Veins": "Cardiologist",
+    "Hypothyroidism": "Endocrinologist",
+    "Hyperthyroidism": "Endocrinologist",
+    "Hypoglycemia": "Endocrinologist",
+    "Osteoarthritis": "Orthopedic Surgeon",
+    "Arthritis": "Rheumatologist",
+    "Vertigo": "ENT Specialist",
+    "Acne": "Dermatologist",
+    "Psoriasis": "Dermatologist",
+    "Impetigo": "Dermatologist",
+    "Dimorphic Hemorrhoids (Piles)": "General Physician",
+    "Epilepsy": "Neurologist",
+    "Kidney Stones": "Nephrologist",
+    "Chronic Kidney Disease": "Nephrologist",
+    "Irritable Bowel Syndrome": "Gastroenterologist",
+    "Anemia": "General Physician",
 }
 
 
 def get_specialist(disease: str) -> str:
-    """Return the specialist type for a disease, or a default."""
+    """Return the specialist type for a disease."""
     return DISEASE_TO_SPECIALIST.get(disease, "General Physician")
 
 
-def recommend_doctors(
-    disease: str,
-    city: str | None = None,
-) -> dict:
+def recommend_doctors(disease: str, city: str | None = None) -> dict:
     """
     Return {
-        "specialist": str,
-        "doctors": [ { name, hospital, city, contact }, ... ]
+        specialist: str,
+        doctors: [ { name, hospital, city, state, experience_years, rating, consultation_fee, available_days, phone } ]
     }
     """
     specialist = get_specialist(disease)
-    doctors = DOCTORS_DB.get(specialist, DOCTORS_DB["General Physician"])
-
-    if city:
-        city_lower = city.strip().lower()
-        filtered = [d for d in doctors if d["city"].lower() == city_lower]
-        if filtered:
-            doctors = filtered
-        # If no match in city, return all doctors for that specialist
+    doctors = get_doctors(specialist, city=city, limit=5)
 
     return {
         "specialist": specialist,

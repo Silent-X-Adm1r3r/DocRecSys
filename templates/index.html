@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DocRecSys — AI Symptom Checker</title>
-    <meta name="description" content="AI-powered symptom checker with doctor recommendations. Get instant health assessments and find the right specialist.">
+    <title>DocRecSys — AI Medical Symptom Checker & Doctor Recommendation</title>
+    <meta name="description" content="AI-powered medical symptom checker for India. Get instant health assessments, disease predictions, and specialist doctor recommendations across all Indian states.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -14,6 +14,9 @@
     <!-- ═══════════════ LANDING PAGE ═══════════════ -->
     <section id="landing" class="landing">
         <div class="landing-bg"></div>
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
         <div class="landing-content">
             <div class="logo-icon">
                 <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -28,28 +31,31 @@
                 </svg>
             </div>
             <h1>DocRecSys</h1>
-            <p class="tagline">AI-Powered Symptom Checker &amp; Doctor Recommendation</p>
-            <p class="subtitle">Describe your symptoms in plain language and get instant health insights, triage suggestions, and specialist recommendations.</p>
+            <p class="tagline">AI-Powered Medical Symptom Analysis & Doctor Recommendation</p>
+            <p class="subtitle">Describe your symptoms in plain language. Our ML engine analyzes them against 50+ diseases and recommends specialists from 900+ doctors across all Indian states.</p>
             <button id="btn-start" class="btn-start" onclick="startChat()">
-                <span>Get Started</span>
+                <span>Start Health Check</span>
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10h12m0 0l-4-4m4 4l-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
             <div class="features">
-                <div class="feature-card">
+                <div class="feature-card" id="feature-ai">
                     <div class="feature-icon">🧠</div>
-                    <h3>AI Analysis</h3>
-                    <p>Symptom-based disease prediction powered by NLP</p>
+                    <h3>ML Prediction</h3>
+                    <p>98% accurate ensemble model trained on medical datasets with 50+ diseases</p>
                 </div>
-                <div class="feature-card">
+                <div class="feature-card" id="feature-doctor">
                     <div class="feature-icon">🩺</div>
                     <h3>Doctor Match</h3>
-                    <p>Get matched with the right specialist instantly</p>
+                    <p>900+ doctors across 35 Indian cities, 18 specialties — find the right one</p>
                 </div>
-                <div class="feature-card">
+                <div class="feature-card" id="feature-emergency">
                     <div class="feature-icon">🚨</div>
-                    <h3>Emergency Alert</h3>
-                    <p>Instant detection of life-threatening symptoms</p>
+                    <h3>Emergency Triage</h3>
+                    <p>Instant detection of critical symptoms with India emergency helplines</p>
                 </div>
+            </div>
+            <div class="disclaimer-banner">
+                ⚕️ This system provides informational guidance only and is not a substitute for professional medical care.
             </div>
         </div>
     </section>
@@ -72,19 +78,56 @@
                 </div>
                 <div>
                     <h2>DocRecSys</h2>
-                    <span class="status-dot"></span> <span class="status-text">Online</span>
+                    <span class="status-dot"></span> <span class="status-text">AI Engine Active</span>
                 </div>
             </div>
-            <button class="btn-close" onclick="closeChat()" title="Close">✕</button>
+            <div class="chat-header-right">
+                <select id="city-select" class="city-select" title="Select your city">
+                    <option value="">📍 Any City</option>
+                    <option value="New Delhi">New Delhi</option>
+                    <option value="Mumbai">Mumbai</option>
+                    <option value="Bengaluru">Bengaluru</option>
+                    <option value="Chennai">Chennai</option>
+                    <option value="Hyderabad">Hyderabad</option>
+                    <option value="Kolkata">Kolkata</option>
+                    <option value="Jaipur">Jaipur</option>
+                    <option value="Lucknow">Lucknow</option>
+                    <option value="Bhopal">Bhopal</option>
+                    <option value="Bhubaneswar">Bhubaneswar</option>
+                    <option value="Patna">Patna</option>
+                    <option value="Chandigarh">Chandigarh</option>
+                    <option value="Thiruvananthapuram">Thiruvananthapuram</option>
+                    <option value="Ranchi">Ranchi</option>
+                    <option value="Dehradun">Dehradun</option>
+                    <option value="Raipur">Raipur</option>
+                    <option value="Gandhinagar">Gandhinagar</option>
+                    <option value="Shimla">Shimla</option>
+                    <option value="Panaji">Panaji</option>
+                    <option value="Gangtok">Gangtok</option>
+                    <option value="Imphal">Imphal</option>
+                    <option value="Shillong">Shillong</option>
+                    <option value="Aizawl">Aizawl</option>
+                    <option value="Kohima">Kohima</option>
+                    <option value="Itanagar">Itanagar</option>
+                    <option value="Agartala">Agartala</option>
+                    <option value="Dispur">Dispur</option>
+                    <option value="Amaravati">Amaravati</option>
+                    <option value="Puducherry">Puducherry</option>
+                    <option value="Srinagar">Srinagar</option>
+                    <option value="Port Blair">Port Blair</option>
+                </select>
+                <button class="btn-reset" onclick="resetChat()" title="New Chat">🔄</button>
+                <button class="btn-close" onclick="closeChat()" title="Close">✕</button>
+            </div>
         </header>
 
-        <main id="chat-messages" class="chat-messages">
-            <!-- Messages are injected here by JS -->
+        <main id="chat-messages" class="chat-messages" role="log" aria-label="Chat messages">
+            <!-- Messages injected by JS -->
         </main>
 
         <footer class="chat-input-area">
-            <input type="text" id="chat-input" placeholder="Describe your symptoms…" autocomplete="off" />
-            <button id="btn-send" onclick="sendMessage()" title="Send">
+            <input type="text" id="chat-input" placeholder="Describe your symptoms…" autocomplete="off" aria-label="Symptom input" maxlength="2000" />
+            <button id="btn-send" onclick="sendMessage()" title="Send" aria-label="Send message">
                 <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M2 11l8-9v6h10v6H10v6L2 11z" fill="currentColor"/></svg>
             </button>
         </footer>

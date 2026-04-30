@@ -1,17 +1,13 @@
 """
-Response Formatter Service
-Builds the structured JSON response returned by the /webhook endpoint.
+Response Formatter — Builds structured JSON for all response types.
 """
-
 from __future__ import annotations
 
-
 DISCLAIMER = (
-    "⚕️ **Disclaimer:** This is a preliminary AI-based assessment and "
-    "does NOT replace professional medical advice. Please consult a "
-    "qualified healthcare professional for diagnosis and treatment."
+    "⚕️ **Medical Disclaimer:** This system provides informational guidance only "
+    "and is NOT a substitute for professional medical diagnosis, treatment, or "
+    "emergency care. Always consult a qualified healthcare professional."
 )
-
 
 def format_response(
     symptoms: list[str],
@@ -20,33 +16,21 @@ def format_response(
     triage: str,
     doctor_info: dict | None,
     emergency: bool = False,
-    emergency_msg: str = "",
+    emergency_data: dict | None = None,
     followup: dict | None = None,
 ) -> dict:
-    """
-    Build the final structured response dict.
-
-    Parameters
-    ----------
-    symptoms : matched symptom list
-    predictions : [{ "disease": str, "confidence": float }, ...]
-    interpretations : ["Likely condition", ...] parallel to predictions
-    triage : triage suggestion string
-    doctor_info : { "specialist": str, "doctors": [...] } or None
-    emergency : whether emergency was triggered
-    emergency_msg : the emergency alert text
-    followup : optional follow-up question dict
-    """
-
-    # ── Emergency override ──────────────────────────────────────────
-    if emergency:
+    # ── Emergency override
+    if emergency and emergency_data:
         return {
             "type": "emergency",
-            "message": emergency_msg,
+            "level": emergency_data.get("level", "HIGH"),
+            "score": emergency_data.get("score", 0),
+            "message": emergency_data.get("message", ""),
+            "numbers": emergency_data.get("numbers", {}),
             "disclaimer": DISCLAIMER,
         }
 
-    # ── Follow-up needed ────────────────────────────────────────────
+    # ── Follow-up needed
     if followup:
         return {
             "type": "followup",
@@ -54,32 +38,31 @@ def format_response(
             "followup_type": followup["type"],
         }
 
-    # ── No predictions ──────────────────────────────────────────────
+    # ── No predictions
     if not predictions:
         return {
             "type": "no_match",
             "message": (
-                "I wasn't able to narrow down a condition from those symptoms. "
-                "Could you provide more details or list additional symptoms?"
+                "I wasn't able to identify a specific condition from those symptoms. "
+                "Could you provide more details or describe additional symptoms?"
             ),
             "disclaimer": DISCLAIMER,
         }
 
-    # ── Normal structured response ──────────────────────────────────
+    # ── Normal result
     conditions = []
     for pred, interp in zip(predictions, interpretations):
         conditions.append({
             "disease": pred["disease"],
             "confidence": pred["confidence"],
-            "confidence_pct": f"{round(pred['confidence'] * 100)}%",
+            "confidence_pct": pred.get("confidence_pct", f"{round(pred['confidence']*100)}%"),
             "interpretation": interp,
+            "influencing_symptoms": pred.get("explanation_symptoms", []),
         })
 
-    explanation = (
-        "This prediction is based on the symptoms: "
-        + ", ".join(f"**{s}**" for s in symptoms)
-        + "."
-    )
+    from services.symptom_extractor import get_display_name
+    symptom_names = [get_display_name(s) for s in symptoms]
+    explanation = "Prediction based on: " + ", ".join(f"**{s}**" for s in symptom_names) + "."
 
     result: dict = {
         "type": "result",
@@ -88,7 +71,6 @@ def format_response(
         "triage": triage,
         "disclaimer": DISCLAIMER,
     }
-
     if doctor_info:
         result["doctor_recommendation"] = doctor_info
 
