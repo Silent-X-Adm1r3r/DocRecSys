@@ -373,10 +373,11 @@ body {
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 1.3rem;
+    padding-top: 1.7rem; /* extra room for the ::before gradient bar */
     animation: msgAppear .5s cubic-bezier(.34,1.56,.64,1);
     box-shadow: var(--shadow-md);
     position: relative;
-    overflow: hidden;
+    /* overflow: hidden removed — it was clipping card content */
 }
 .result-card::before {
     content: '';
@@ -385,6 +386,7 @@ body {
     height: 3px;
     background: var(--gradient);
     border-radius: var(--radius) var(--radius) 0 0;
+    pointer-events: none;
 }
 .result-card h3 {
     font-size: .82rem; font-weight: 700;
@@ -503,16 +505,19 @@ body {
     border: 2px solid var(--danger);
     border-radius: var(--radius);
     padding: 1.3rem;
+    padding-top: 1.7rem;
     animation: emergencyPulse .6s ease-out;
     box-shadow: 0 0 30px rgba(248,113,113,.15);
     position: relative;
-    overflow: hidden;
+    /* overflow: hidden removed — was clipping card content */
 }
 .emergency-card::before {
     content: '';
     position: absolute; top: 0; left: 0; right: 0; height: 3px;
     background: linear-gradient(90deg, var(--danger), #fca5a5, var(--danger));
     animation: emergencyBar 1.5s ease-in-out infinite;
+    pointer-events: none;
+    border-radius: var(--radius) var(--radius) 0 0;
 }
 @keyframes emergencyBar {
     0%,100% { opacity: 1; } 50% { opacity: .5; }
