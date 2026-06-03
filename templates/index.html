@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DocRecSys — AI Medical Symptom Checker & Doctor Recommendation</title>
-    <meta name="description" content="AI-powered medical symptom checker for India. Get instant health assessments, disease predictions, and specialist doctor recommendations across all Indian states.">
+    <meta name="description" content="AI-powered medical symptom checker. Get instant health assessments, disease predictions, and specialist doctor recommendations with embedded Google Maps.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -32,7 +32,7 @@
             </div>
             <h1>DocRecSys</h1>
             <p class="tagline">AI-Powered Medical Symptom Analysis & Doctor Recommendation</p>
-            <p class="subtitle">Describe your symptoms in plain language. Our ML engine analyzes them against 50+ diseases and recommends specialists from 900+ doctors across all Indian states.</p>
+            <p class="subtitle">Describe your symptoms naturally. Our AI engine powered by Gemini and medical datasets analyzes them against 800+ diseases, predicts conditions, and finds nearby specialists using Google Maps.</p>
             <button id="btn-start" class="btn-start" onclick="startChat()">
                 <span>Start Health Check</span>
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10h12m0 0l-4-4m4 4l-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -40,18 +40,18 @@
             <div class="features">
                 <div class="feature-card" id="feature-ai">
                     <div class="feature-icon">🧠</div>
-                    <h3>ML Prediction</h3>
-                    <p>98% accurate ensemble model trained on medical datasets with 50+ diseases</p>
+                    <h3>Gemini AI + ML</h3>
+                    <p>Dual-engine analysis: Gemini AI symptom extraction + ensemble ML across 800+ diseases</p>
                 </div>
                 <div class="feature-card" id="feature-doctor">
                     <div class="feature-icon">🩺</div>
-                    <h3>Doctor Match</h3>
-                    <p>900+ doctors across 35 Indian cities, 18 specialties — find the right one</p>
+                    <h3>Smart Recommendations</h3>
+                    <p>Specialist mapping with Google Maps integration and embedded maps for nearby care</p>
                 </div>
                 <div class="feature-card" id="feature-emergency">
                     <div class="feature-icon">🚨</div>
-                    <h3>Emergency Triage</h3>
-                    <p>Instant detection of critical symptoms with India emergency helplines</p>
+                    <h3>Emergency Detection</h3>
+                    <p>Instant emergency triage with red-flag detection and nearest hospital routing</p>
                 </div>
             </div>
             <div class="disclaimer-banner">
@@ -82,44 +82,21 @@
                 </div>
             </div>
             <div class="chat-header-right">
-                <select id="city-select" class="city-select" title="Select your city">
-                    <option value="">📍 Any City</option>
-                    <option value="New Delhi">New Delhi</option>
-                    <option value="Mumbai">Mumbai</option>
-                    <option value="Bengaluru">Bengaluru</option>
-                    <option value="Chennai">Chennai</option>
-                    <option value="Hyderabad">Hyderabad</option>
-                    <option value="Kolkata">Kolkata</option>
-                    <option value="Jaipur">Jaipur</option>
-                    <option value="Lucknow">Lucknow</option>
-                    <option value="Bhopal">Bhopal</option>
-                    <option value="Bhubaneswar">Bhubaneswar</option>
-                    <option value="Patna">Patna</option>
-                    <option value="Chandigarh">Chandigarh</option>
-                    <option value="Thiruvananthapuram">Thiruvananthapuram</option>
-                    <option value="Ranchi">Ranchi</option>
-                    <option value="Dehradun">Dehradun</option>
-                    <option value="Raipur">Raipur</option>
-                    <option value="Gandhinagar">Gandhinagar</option>
-                    <option value="Shimla">Shimla</option>
-                    <option value="Panaji">Panaji</option>
-                    <option value="Gangtok">Gangtok</option>
-                    <option value="Imphal">Imphal</option>
-                    <option value="Shillong">Shillong</option>
-                    <option value="Aizawl">Aizawl</option>
-                    <option value="Kohima">Kohima</option>
-                    <option value="Itanagar">Itanagar</option>
-                    <option value="Agartala">Agartala</option>
-                    <option value="Dispur">Dispur</option>
-                    <option value="Amaravati">Amaravati</option>
-                    <option value="Puducherry">Puducherry</option>
-                    <option value="Srinagar">Srinagar</option>
-                    <option value="Port Blair">Port Blair</option>
-                </select>
-                <button class="btn-reset" onclick="resetChat()" title="New Chat">🔄</button>
-                <button class="btn-close" onclick="closeChat()" title="Close">✕</button>
+                <div id="location-status" class="location-status" title="Location status">
+                    <span class="loc-icon">📍</span>
+                    <span class="loc-text" id="loc-text">Locating…</span>
+                </div>
+                <button class="btn-reset" onclick="resetChat()" title="New Chat" id="btn-reset">🔄</button>
+                <button class="btn-close" onclick="closeChat()" title="Close" id="btn-close">✕</button>
             </div>
         </header>
+
+        <!-- Location error banner -->
+        <div id="location-error-banner" class="location-error-banner hidden">
+            <div class="loc-error-icon">⚠️</div>
+            <div class="loc-error-text">Location access is required to recommend nearby doctors.</div>
+            <button class="loc-error-retry" onclick="requestLocation()">Enable Location</button>
+        </div>
 
         <main id="chat-messages" class="chat-messages" role="log" aria-label="Chat messages">
             <!-- Messages injected by JS -->
@@ -133,6 +110,8 @@
         </footer>
     </section>
 
+    <!-- Google Maps JavaScript API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ maps_api_key }}&libraries=places" async defer></script>
     <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
 </body>
 </html>

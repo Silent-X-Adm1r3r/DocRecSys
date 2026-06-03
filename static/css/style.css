@@ -549,6 +549,200 @@ body {
     font-size: .8rem; color: var(--text-primary); padding: .15rem 0;
 }
 
+/* ── Hospital Cards ───────────────────────────────────────────── */
+.hospital-cards { display: flex; flex-direction: column; gap: .6rem; }
+.hospital-card {
+    display: flex; align-items: flex-start; gap: .8rem;
+    padding: .75rem .95rem;
+    background: rgba(255,255,255,.025);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    transition: transform .3s cubic-bezier(.34,1.56,.64,1), border-color .2s, box-shadow .3s;
+}
+.hospital-card:hover {
+    border-color: rgba(59,130,246,.3);
+    transform: translateX(4px) translateY(-2px);
+    box-shadow: var(--shadow-sm), 0 0 20px rgba(59,130,246,.06);
+}
+.hospital-icon {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: var(--gradient-r);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(59,130,246,.2);
+}
+.hospital-info { flex: 1; }
+.hospital-info .hosp-name { font-weight: 700; font-size: .86rem; }
+.hospital-info .hosp-address { font-size: .74rem; color: var(--text-muted); margin-top: .1rem; }
+.hospital-info .hosp-meta { font-size: .72rem; color: var(--text-muted); margin-top: .15rem; display: flex; flex-wrap: wrap; align-items: center; gap: .25rem; }
+.hosp-type { background: rgba(59,130,246,.1); color: var(--accent-2); padding: .1rem .4rem; border-radius: 50px; font-size: .65rem; font-weight: 600; }
+.open-badge { background: rgba(52,211,153,.12); color: var(--success); padding: .1rem .4rem; border-radius: 50px; font-size: .65rem; font-weight: 600; }
+.closed-badge { background: rgba(248,113,113,.1); color: var(--danger); padding: .1rem .4rem; border-radius: 50px; font-size: .65rem; font-weight: 600; }
+
+/* ── Action Buttons (Maps/Call/Directions) ─────────────────────── */
+.doc-actions, .hosp-actions { display: flex; gap: .4rem; margin-top: .35rem; flex-wrap: wrap; }
+.action-btn {
+    display: inline-flex; align-items: center; gap: .25rem;
+    padding: .25rem .6rem; border-radius: 50px;
+    font-size: .68rem; font-weight: 600; text-decoration: none;
+    transition: all .2s; cursor: pointer; border: 1px solid var(--border);
+}
+.action-btn.maps-btn { background: rgba(59,130,246,.1); color: var(--accent-2); border-color: rgba(59,130,246,.2); }
+.action-btn.maps-btn:hover { background: rgba(59,130,246,.2); transform: translateY(-1px); }
+.action-btn.directions-btn { background: rgba(110,231,183,.1); color: var(--accent-1); border-color: rgba(110,231,183,.2); }
+.action-btn.directions-btn:hover { background: rgba(110,231,183,.2); transform: translateY(-1px); }
+.action-btn.call-btn { background: rgba(129,140,248,.1); color: var(--accent-3); border-color: rgba(129,140,248,.2); }
+.action-btn.call-btn:hover { background: rgba(129,140,248,.2); transform: translateY(-1px); }
+
+/* ── Confidence Level Badge ───────────────────────────────────── */
+.confidence-level-badge {
+    padding: .5rem .8rem; border-radius: var(--radius-sm);
+    font-size: .8rem; line-height: 1.5; margin-bottom: .8rem;
+}
+.confidence-level-badge.high { background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.2); color: var(--success); }
+.confidence-level-badge.medium { background: rgba(251,191,36,.06); border: 1px solid rgba(251,191,36,.15); color: var(--warning); }
+.confidence-level-badge.low { background: rgba(248,113,113,.06); border: 1px solid rgba(248,113,113,.15); color: var(--danger); }
+
+/* ── Red Flag Warning ─────────────────────────────────────────── */
+.red-flag-warning {
+    background: rgba(251,191,36,.06); border: 1px solid rgba(251,191,36,.2);
+    border-radius: var(--radius-sm); padding: .6rem .8rem; margin-bottom: .8rem;
+}
+.rf-item { font-size: .82rem; color: var(--warning); line-height: 1.5; padding: .15rem 0; }
+
+/* ── Precautions ──────────────────────────────────────────────── */
+.precaution-list { display: flex; flex-direction: column; gap: .25rem; }
+.precaution-item {
+    font-size: .82rem; color: var(--text-secondary); line-height: 1.5;
+    padding: .3rem .6rem; background: rgba(110,231,183,.04);
+    border-radius: 8px; border-left: 2px solid var(--accent-1);
+}
+
+/* ── Disease Description ──────────────────────────────────────── */
+.disease-desc {
+    font-size: .76rem; color: var(--text-muted); line-height: 1.5;
+    padding: .3rem .6rem; margin-top: .25rem; margin-bottom: .5rem;
+    font-style: italic;
+}
+
+/* ── Location Status Indicator ────────────────────────────────── */
+.location-status {
+    display: flex; align-items: center; gap: .3rem;
+    padding: .25rem .6rem; border-radius: 50px;
+    font-size: .72rem; font-weight: 500;
+    border: 1px solid var(--border);
+    transition: all .3s;
+}
+.location-status .loc-icon { font-size: .85rem; }
+.location-status .loc-text { color: var(--text-muted); }
+.location-status.loc-pending { border-color: rgba(251,191,36,.3); }
+.location-status.loc-pending .loc-text { color: var(--warning); }
+.location-status.loc-ok { border-color: rgba(52,211,153,.3); background: rgba(52,211,153,.06); }
+.location-status.loc-ok .loc-text { color: var(--success); }
+.location-status.loc-error { border-color: rgba(248,113,113,.3); background: rgba(248,113,113,.06); }
+.location-status.loc-error .loc-text { color: var(--danger); }
+
+/* ── Location Error Banner ───────────────────────────────────── */
+.location-error-banner {
+    display: flex; align-items: center; gap: .6rem;
+    padding: .6rem 1rem;
+    background: rgba(248,113,113,.08);
+    border-bottom: 1px solid rgba(248,113,113,.2);
+    animation: slideDown .3s ease-out;
+}
+.location-error-banner .loc-error-icon { font-size: 1.1rem; }
+.location-error-banner .loc-error-text {
+    flex: 1; font-size: .8rem; color: var(--danger); font-weight: 500;
+}
+.location-error-banner .loc-error-retry {
+    padding: .3rem .8rem; border-radius: 50px;
+    background: rgba(248,113,113,.15); border: 1px solid rgba(248,113,113,.3);
+    color: var(--danger); font-size: .72rem; font-weight: 600;
+    font-family: var(--font); cursor: pointer; transition: all .2s;
+    white-space: nowrap;
+}
+.location-error-banner .loc-error-retry:hover {
+    background: rgba(248,113,113,.25); transform: translateY(-1px);
+}
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-100%); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Location Warning in Results ─────────────────────────────── */
+.location-warning {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .5rem .8rem; margin-bottom: .8rem;
+    background: rgba(251,191,36,.06); border: 1px solid rgba(251,191,36,.2);
+    border-radius: var(--radius-sm); font-size: .82rem; color: var(--warning);
+}
+.location-warning .loc-warn-icon { font-size: 1rem; }
+
+/* ── Embedded Map Container ──────────────────────────────────── */
+.embedded-map-container {
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    margin-top: .4rem;
+    position: relative;
+}
+.embedded-map {
+    width: 100%;
+    height: 300px;
+    background: var(--bg-secondary);
+}
+.embedded-map-container::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
+}
+
+/* ── Distance Badge ──────────────────────────────────────────── */
+.distance-badge {
+    display: inline-flex; align-items: center; gap: .2rem;
+    padding: .15rem .5rem; border-radius: 50px;
+    background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.2);
+    color: var(--accent-2); font-size: .68rem; font-weight: 600;
+}
+
+/* ── Specialist Badge ────────────────────────────────────────── */
+.spec-badge {
+    display: inline-flex; align-items: center; gap: .2rem;
+    padding: .15rem .5rem; border-radius: 50px;
+    background: rgba(110,231,183,.1); border: 1px solid rgba(110,231,183,.2);
+    color: var(--accent-1); font-size: .68rem; font-weight: 600;
+}
+
+/* ── Rarity Badge ────────────────────────────────────────────── */
+.rarity-badge {
+    display: inline-block; padding: .12rem .5rem;
+    border-radius: 50px; font-size: .62rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .5px;
+    vertical-align: middle; margin-left: .3rem;
+}
+.rarity-badge.rare {
+    background: rgba(248,113,113,.12); color: var(--danger);
+    border: 1px solid rgba(248,113,113,.25);
+}
+.rarity-badge.common {
+    background: rgba(251,191,36,.1); color: var(--warning);
+    border: 1px solid rgba(251,191,36,.2);
+}
+.rarity-badge.general {
+    background: rgba(52,211,153,.08); color: var(--success);
+    border: 1px solid rgba(52,211,153,.2);
+}
+
+/* ── No Results Message ──────────────────────────────────────── */
+.no-results-msg {
+    font-size: .82rem; color: var(--text-muted);
+    padding: .6rem; text-align: center;
+    font-style: italic;
+}
+
 /* ── Feedback ──────────────────────────────────────────────────── */
 .feedback-row { display: flex; align-items: center; gap: .6rem; margin-top: .8rem; }
 .feedback-row span { font-size: .76rem; color: var(--text-muted); }
@@ -598,7 +792,8 @@ body {
 @media (max-width: 768px) {
     .landing-content h1 { font-size: 2.6rem; }
     .features { grid-template-columns: 1fr; gap: 1rem; }
-    .city-select { max-width: 110px; font-size: .72rem; }
+    .embedded-map { height: 250px; }
+    .location-status .loc-text { display: none; }
 }
 @media (max-width: 480px) {
     .landing-content h1 { font-size: 2rem; }
@@ -609,4 +804,7 @@ body {
     .chat-header { padding: .7rem 1rem; }
     .chat-input-area { padding: .7rem .8rem; }
     .doctor-card { padding: .6rem .7rem; }
+    .embedded-map { height: 200px; }
+    .location-error-banner { flex-wrap: wrap; }
+    .location-error-banner .loc-error-retry { width: 100%; text-align: center; }
 }

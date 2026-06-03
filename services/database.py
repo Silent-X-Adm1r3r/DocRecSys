@@ -40,8 +40,6 @@ CREATE TABLE IF NOT EXISTS doctors (
     name TEXT NOT NULL,
     specialization TEXT NOT NULL,
     hospital TEXT NOT NULL,
-    city TEXT NOT NULL,
-    state TEXT NOT NULL,
     experience_years INTEGER DEFAULT 0,
     rating REAL DEFAULT 4.0,
     consultation_fee TEXT,
@@ -49,14 +47,12 @@ CREATE TABLE IF NOT EXISTS doctors (
     phone TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_doctors_spec ON doctors(specialization);
-CREATE INDEX IF NOT EXISTS idx_doctors_city ON doctors(city);
 
 CREATE TABLE IF NOT EXISTS sessions (
     id TEXT PRIMARY KEY,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     symptoms TEXT,
-    predictions TEXT,
-    city TEXT
+    predictions TEXT
 );
 
 CREATE TABLE IF NOT EXISTS feedback (
@@ -85,42 +81,27 @@ def _load_doctors(conn: sqlite3.Connection):
     with open(json_path, "r", encoding="utf-8") as f:
         doctors = json.load(f)
     conn.executemany(
-        "INSERT INTO doctors (name,specialization,hospital,city,state,experience_years,rating,consultation_fee,available_days,phone) VALUES (?,?,?,?,?,?,?,?,?,?)",
-        [(d["name"],d["specialization"],d["hospital"],d["city"],d["state"],d.get("experience_years",0),d.get("rating",4.0),d.get("consultation_fee",""),d.get("available_days",""),d.get("phone","")) for d in doctors]
+        "INSERT INTO doctors (name,specialization,hospital,experience_years,rating,consultation_fee,available_days,phone) VALUES (?,?,?,?,?,?,?,?)",
+        [(d["name"],d["specialization"],d["hospital"],d.get("experience_years",0),d.get("rating",4.0),d.get("consultation_fee",""),d.get("available_days",""),d.get("phone","")) for d in doctors]
     )
     logger.info("Loaded %d doctors into database", len(doctors))
 
 # ── Public query functions ──────────────────────────────────────────
 
-def get_doctors(specialization: str, city: str | None = None, limit: int = 5) -> list[dict]:
-    """Fetch doctors by specialization, optionally filtered by city."""
+def get_doctors(specialization: str, limit: int = 5) -> list[dict]:
+    """Fetch doctors by specialization. Used as static fallback when Maps fails."""
     with _connect() as conn:
-        if city:
-            # Fuzzy city match
-            city_variants = _city_aliases(city)
-            placeholders = ",".join("?" for _ in city_variants)
-            rows = conn.execute(
-                f"SELECT * FROM doctors WHERE specialization=? AND LOWER(city) IN ({placeholders}) ORDER BY rating DESC, experience_years DESC LIMIT ?",
-                [specialization] + city_variants + [limit]
-            ).fetchall()
-            if not rows:
-                # Fallback: all doctors for that specialty
-                rows = conn.execute(
-                    "SELECT * FROM doctors WHERE specialization=? ORDER BY rating DESC, experience_years DESC LIMIT ?",
-                    [specialization, limit]
-                ).fetchall()
-        else:
-            rows = conn.execute(
-                "SELECT * FROM doctors WHERE specialization=? ORDER BY rating DESC, experience_years DESC LIMIT ?",
-                [specialization, limit]
-            ).fetchall()
+        rows = conn.execute(
+            "SELECT * FROM doctors WHERE specialization=? ORDER BY rating DESC, experience_years DESC LIMIT ?",
+            [specialization, limit]
+        ).fetchall()
         return [dict(r) for r in rows]
 
-def save_session(session_id: str, symptoms: list, predictions: list, city: str | None = None):
+def save_session(session_id: str, symptoms: list, predictions: list):
     with _connect() as conn:
         conn.execute(
-            "INSERT OR REPLACE INTO sessions (id, symptoms, predictions, city) VALUES (?,?,?,?)",
-            [session_id, json.dumps(symptoms), json.dumps(predictions), city]
+            "INSERT OR REPLACE INTO sessions (id, symptoms, predictions) VALUES (?,?,?)",
+            [session_id, json.dumps(symptoms), json.dumps(predictions)]
         )
 
 def save_feedback(session_id: str, vote: str):
@@ -134,25 +115,3 @@ def save_emergency_alert(session_id: str, trigger_text: str, severity_score: flo
             [session_id, trigger_text, severity_score, level]
         )
 
-def _city_aliases(city: str) -> list[str]:
-    """Return lowercase variants for fuzzy city matching."""
-    c = city.strip().lower()
-    aliases = {
-        "bangalore": ["bengaluru", "bangalore"],
-        "bengaluru": ["bengaluru", "bangalore"],
-        "bombay": ["mumbai", "bombay"],
-        "mumbai": ["mumbai", "bombay"],
-        "calcutta": ["kolkata", "calcutta"],
-        "kolkata": ["kolkata", "calcutta"],
-        "madras": ["chennai", "madras"],
-        "chennai": ["chennai", "madras"],
-        "delhi": ["new delhi", "delhi"],
-        "new delhi": ["new delhi", "delhi"],
-        "trivandrum": ["thiruvananthapuram", "trivandrum"],
-        "thiruvananthapuram": ["thiruvananthapuram", "trivandrum"],
-        "pondicherry": ["puducherry", "pondicherry"],
-        "puducherry": ["puducherry", "pondicherry"],
-        "guwahati": ["dispur", "guwahati"],
-        "chandigarh": ["chandigarh"],
-    }
-    return aliases.get(c, [c])

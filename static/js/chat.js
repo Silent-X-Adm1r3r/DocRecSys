@@ -1,4 +1,4 @@
-/* ─── DocRecSys Chat Client — Enhanced ───────────────────────────── */
+/* ─── DocRecSys Chat Client — Production Enhanced with Embedded Maps ── */
 
 const SESSION_ID = crypto.randomUUID();
 const WEBHOOK   = "/webhook";
@@ -7,19 +7,29 @@ const RESET     = "/reset";
 
 const messagesEl = document.getElementById("chat-messages");
 const inputEl    = document.getElementById("chat-input");
-const cityEl     = document.getElementById("city-select");
+
+let userLat = null;
+let userLng = null;
+let locationGranted = false;
+let mapCounter = 0;
 
 /* ── Navigation ─────────────────────────────────────────────────── */
 
 function startChat() {
     document.getElementById("landing").classList.add("hidden");
     document.getElementById("chatbot").classList.remove("hidden");
+
+    // Auto-request geolocation immediately
+    requestLocation();
+
     addBotBubble(
-        "👋 Hello! I'm your AI health assistant.\n\n" +
-        "Describe your symptoms in plain language and I'll analyze them using our " +
-        "machine learning engine to identify possible conditions and recommend specialists.\n\n" +
-        "**Tip:** Select your city above for local doctor recommendations.\n\n" +
-        "**Example:** \"I have a headache, fever, and body ache for 3 days.\""
+        "👋 Hello! I'm your AI health assistant powered by **Gemini AI** and medical datasets.\n\n" +
+        "Describe your symptoms in plain language and I'll:\n" +
+        "• Analyze them against **800+ diseases**\n" +
+        "• Predict probable conditions with confidence scores\n" +
+        "• Recommend specialist doctors near you\n" +
+        "• Show nearby hospitals on an **embedded map**\n\n" +
+        '**Example:** "I have a headache, fever, and body ache for 3 days."'
     );
     inputEl.focus();
 }
@@ -36,10 +46,46 @@ function resetChat() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ session_id: SESSION_ID }),
     }).catch(() => {});
-    addBotBubble(
-        "🔄 Session reset. Describe your symptoms to start a new assessment."
-    );
+    addBotBubble("🔄 Session reset. Describe your symptoms to start a new assessment.");
     inputEl.focus();
+}
+
+/* ── Location ───────────────────────────────────────────────────── */
+
+function requestLocation() {
+    const statusEl = document.getElementById("location-status");
+    const locText = document.getElementById("loc-text");
+    const banner = document.getElementById("location-error-banner");
+
+    if (!navigator.geolocation) {
+        locText.textContent = "Not supported";
+        statusEl.classList.add("loc-error");
+        banner.classList.remove("hidden");
+        return;
+    }
+
+    locText.textContent = "Locating…";
+    statusEl.classList.remove("loc-error", "loc-ok");
+    statusEl.classList.add("loc-pending");
+
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            userLat = pos.coords.latitude;
+            userLng = pos.coords.longitude;
+            locationGranted = true;
+            locText.textContent = "Location active";
+            statusEl.classList.remove("loc-pending", "loc-error");
+            statusEl.classList.add("loc-ok");
+            banner.classList.add("hidden");
+        },
+        (err) => {
+            locText.textContent = "Denied";
+            statusEl.classList.remove("loc-pending", "loc-ok");
+            statusEl.classList.add("loc-error");
+            banner.classList.remove("hidden");
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+    );
 }
 
 /* ── Send Message ───────────────────────────────────────────────── */
@@ -55,11 +101,16 @@ async function sendMessage() {
     const typing = showTyping();
 
     try {
-        const city = cityEl ? cityEl.value : "";
+        const payload = { session_id: SESSION_ID, message: text };
+        if (userLat && userLng) {
+            payload.lat = userLat;
+            payload.lng = userLng;
+        }
+
         const res = await fetch(WEBHOOK, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ session_id: SESSION_ID, message: text, city: city || undefined }),
+            body: JSON.stringify(payload),
         });
 
         if (res.status === 429) {
@@ -120,10 +171,29 @@ function renderEmergency(data) {
         `;
     }
 
+    let hospitalsHtml = "";
+    if (data.hospitals && data.hospitals.length > 0) {
+        hospitalsHtml = `<div class="result-section"><div class="label">Nearest Emergency Hospitals</div><div class="hospital-cards">`;
+        for (const h of data.hospitals) {
+            hospitalsHtml += renderHospitalCard(h);
+        }
+        hospitalsHtml += `</div></div>`;
+    }
+
+    // Embedded map for emergency hospitals
+    let mapHtml = "";
+    if (data.hospitals && data.hospitals.length > 0 && data.user_location) {
+        const mapId = `emap-${++mapCounter}`;
+        mapHtml = `<div class="embedded-map-container"><div id="${mapId}" class="embedded-map"></div></div>`;
+        setTimeout(() => renderEmbeddedMap(mapId, data.user_location, [], data.hospitals), 100);
+    }
+
     card.innerHTML = `
         <div class="emer-title">🚨 ${esc(data.level || "EMERGENCY")} ALERT</div>
         <div class="emer-body">${md(data.message)}</div>
         ${numbersHtml}
+        ${hospitalsHtml}
+        ${mapHtml}
         <div class="disclaimer">${md(data.disclaimer || "")}</div>
     `;
     messagesEl.appendChild(card);
@@ -133,7 +203,7 @@ function renderEmergency(data) {
 /* ── Follow-up ──────────────────────────────────────────────────── */
 
 function renderFollowup(data) {
-    addBotBubble(data.message);
+    addBotBubble("🔍 " + data.message);
 }
 
 /* ── No match ───────────────────────────────────────────────────── */
@@ -151,7 +221,30 @@ function renderResult(data) {
 
     let html = `<h3>🏥 Health Assessment</h3>`;
 
-    /* Conditions */
+    /* Location error */
+    if (data.location_error) {
+        html += `<div class="location-warning">
+            <span class="loc-warn-icon">⚠️</span>
+            <span>${esc(data.location_error)}</span>
+        </div>`;
+    }
+
+    /* Confidence Level Badge */
+    if (data.confidenceLevel) {
+        const clr = data.confidenceLevel === "high" ? "high" : data.confidenceLevel === "moderate" ? "medium" : "low";
+        html += `<div class="confidence-level-badge ${clr}">${esc(data.confidenceMessage || "")}</div>`;
+    }
+
+    /* Red Flags */
+    if (data.redFlags && data.redFlags.length > 0) {
+        html += `<div class="red-flag-warning">`;
+        for (const rf of data.redFlags) {
+            html += `<div class="rf-item">⚠️ ${md(rf.message)}</div>`;
+        }
+        html += `</div>`;
+    }
+
+    /* Conditions (Top 5) */
     html += `<div class="result-section"><div class="label">Possible Conditions</div>`;
     for (const c of data.conditions) {
         const level = getLevel(c.confidence);
@@ -175,12 +268,17 @@ function renderResult(data) {
             }
             html += `</div>`;
         }
+
+        /* Disease description */
+        if (c.description) {
+            html += `<div class="disease-desc">${esc(c.description)}</div>`;
+        }
     }
     html += `</div>`;
 
     /* Explanation */
     html += `<div class="result-section">
-        <div class="label">Based On</div>
+        <div class="label">Analysis</div>
         <div class="value">${md(data.explanation)}</div>
     </div>`;
 
@@ -190,35 +288,82 @@ function renderResult(data) {
         <div class="value">${md(data.triage)}</div>
     </div>`;
 
+    /* Precautions */
+    if (data.precautions && data.precautions.length > 0) {
+        html += `<div class="result-section"><div class="label">Precautions</div><div class="precaution-list">`;
+        for (const p of data.precautions) {
+            html += `<div class="precaution-item">• ${esc(p)}</div>`;
+        }
+        html += `</div></div>`;
+    }
+
     /* Doctor Recommendation */
     if (data.doctor_recommendation) {
         const dr = data.doctor_recommendation;
+        const rarityBadge = dr.specialist_rarity === "rare"
+            ? '<span class="rarity-badge rare">Rare Specialist</span>'
+            : dr.specialist_rarity === "common"
+            ? '<span class="rarity-badge common">Specialist</span>'
+            : '<span class="rarity-badge general">General</span>';
+
         html += `<div class="result-section">
-            <div class="label">Recommended Specialist — ${esc(dr.specialist)}</div>
+            <div class="label">Recommended Specialist — ${esc(dr.specialist)} ${rarityBadge}</div>
             <div class="doctor-cards">`;
 
-        for (const doc of dr.doctors) {
-            const initials = doc.name.replace("Dr. ", "").split(" ").map(w => w[0]).join("").slice(0, 2);
-            const stars = doc.rating ? "⭐".repeat(Math.round(doc.rating)) : "";
-            const ratingText = doc.rating ? `${doc.rating}/5` : "";
+        if (dr.doctors && dr.doctors.length > 0) {
+            for (const doc of dr.doctors) {
+                const initials = doc.name.replace("Dr. ", "").split(" ").map(w => w[0]).join("").slice(0, 2);
+                const stars = doc.rating ? "⭐".repeat(Math.min(Math.round(doc.rating), 5)) : "";
+                const ratingText = doc.rating ? `${doc.rating}/5` : "";
+                const distText = doc.distance_km ? `${doc.distance_km} km` : "";
 
-            html += `
-                <div class="doctor-card">
-                    <div class="doctor-avatar">${initials}</div>
-                    <div class="doctor-info">
-                        <div class="doc-name">${esc(doc.name)}</div>
-                        <div class="doc-hospital">${esc(doc.hospital)}</div>
-                        <div class="doc-meta">
-                            📍 ${esc(doc.city)}, ${esc(doc.state)}
-                            ${doc.experience_years ? ` · ${doc.experience_years}y exp` : ""}
-                            ${doc.consultation_fee ? ` · ${esc(doc.consultation_fee)}` : ""}
-                            ${doc.available_days ? ` · ${esc(doc.available_days)}` : ""}
+                html += `
+                    <div class="doctor-card">
+                        <div class="doctor-avatar">${initials}</div>
+                        <div class="doctor-info">
+                            <div class="doc-name">${esc(doc.name)}</div>
+                            <div class="doc-hospital">${esc(doc.hospital || doc.address || "")}</div>
+                            <div class="doc-meta">
+                                ${distText ? `<span class="distance-badge">📍 ${esc(distText)}</span>` : ""}
+                                ${doc.specialization ? `<span class="spec-badge">🩺 ${esc(doc.specialization)}</span>` : ""}
+                            </div>
+                            ${ratingText ? `<div class="doc-rating">${stars} ${ratingText}${doc.review_count ? ` (${doc.review_count} reviews)` : ""}</div>` : ""}
+                            <div class="doc-actions">
+                                ${doc.maps_url ? `<a href="${esc(doc.maps_url)}" target="_blank" class="action-btn maps-btn">📍 View on Maps</a>` : ""}
+                                ${doc.phone ? `<a href="tel:${esc(doc.phone)}" class="action-btn call-btn">📞 Call</a>` : ""}
+                            </div>
                         </div>
-                        ${ratingText ? `<div class="doc-rating">${stars} ${ratingText}</div>` : ""}
-                    </div>
-                </div>`;
+                    </div>`;
+            }
+        } else {
+            html += `<div class="no-results-msg">No doctors found nearby. Try enabling location access.</div>`;
         }
         html += `</div></div>`;
+    }
+
+    /* Hospitals */
+    if (data.hospitals && data.hospitals.length > 0) {
+        html += `<div class="result-section"><div class="label">Nearby Hospitals</div><div class="hospital-cards">`;
+        for (const h of data.hospitals) {
+            html += renderHospitalCard(h);
+        }
+        html += `</div></div>`;
+    }
+
+    /* Embedded Map */
+    const doctors = data.doctor_recommendation ? (data.doctor_recommendation.doctors || []) : [];
+    const hospitals = data.hospitals || [];
+    if ((doctors.length > 0 || hospitals.length > 0) && data.user_location) {
+        const mapId = `map-${++mapCounter}`;
+        html += `<div class="result-section">
+            <div class="label">📍 Nearby Doctors & Hospitals</div>
+            <div class="embedded-map-container">
+                <div id="${mapId}" class="embedded-map" data-map-id="${mapId}"></div>
+            </div>
+        </div>`;
+
+        // Render map after DOM insertion
+        setTimeout(() => renderEmbeddedMap(mapId, data.user_location, doctors, hospitals), 200);
     }
 
     /* Disclaimer */
@@ -245,6 +390,161 @@ function renderResult(data) {
             requestAnimationFrame(() => { bar.style.width = w; });
         });
     });
+}
+
+/* ── Embedded Map Rendering ─────────────────────────────────────── */
+
+function renderEmbeddedMap(mapId, userLocation, doctors, hospitals) {
+    if (typeof google === "undefined" || !google.maps) {
+        // Maps JS API not loaded yet — retry
+        setTimeout(() => renderEmbeddedMap(mapId, userLocation, doctors, hospitals), 500);
+        return;
+    }
+
+    const container = document.getElementById(mapId);
+    if (!container) return;
+
+    const center = { lat: userLocation.latitude, lng: userLocation.longitude };
+
+    const map = new google.maps.Map(container, {
+        zoom: 13,
+        center: center,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: true,
+        styles: [
+            { elementType: "geometry", stylers: [{ color: "#1d2c4d" }] },
+            { elementType: "labels.text.stroke", stylers: [{ color: "#1a3646" }] },
+            { elementType: "labels.text.fill", stylers: [{ color: "#8ec3b9" }] },
+            { featureType: "water", elementType: "geometry.fill", stylers: [{ color: "#17263c" }] },
+            { featureType: "road", elementType: "geometry", stylers: [{ color: "#304a7d" }] },
+            { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#255d84" }] },
+            { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] },
+        ],
+    });
+
+    // User location marker (blue)
+    new google.maps.Marker({
+        position: center,
+        map: map,
+        title: "Your Location",
+        icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 10,
+            fillColor: "#3B82F6",
+            fillOpacity: 1,
+            strokeColor: "#ffffff",
+            strokeWeight: 3,
+        },
+        zIndex: 100,
+    });
+
+    const bounds = new google.maps.LatLngBounds();
+    bounds.extend(center);
+
+    // Doctor markers (green)
+    if (doctors) {
+        for (const doc of doctors) {
+            if (!doc.latitude || !doc.longitude) continue;
+            const pos = { lat: doc.latitude, lng: doc.longitude };
+            bounds.extend(pos);
+
+            const marker = new google.maps.Marker({
+                position: pos,
+                map: map,
+                title: doc.name,
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 8,
+                    fillColor: "#6EE7B7",
+                    fillOpacity: 1,
+                    strokeColor: "#ffffff",
+                    strokeWeight: 2,
+                },
+            });
+
+            const infoContent = `
+                <div style="color:#1a1a2e;font-family:Inter,sans-serif;max-width:220px">
+                    <strong>${esc(doc.name)}</strong><br>
+                    <span style="color:#666">${esc(doc.hospital || doc.address || "")}</span><br>
+                    ${doc.distance_km ? `<span>📍 ${doc.distance_km} km</span><br>` : ""}
+                    ${doc.rating ? `<span>⭐ ${doc.rating}/5${doc.review_count ? ` (${doc.review_count})` : ""}</span>` : ""}
+                </div>`;
+
+            const info = new google.maps.InfoWindow({ content: infoContent });
+            marker.addListener("click", () => info.open(map, marker));
+        }
+    }
+
+    // Hospital markers (red)
+    if (hospitals) {
+        for (const h of hospitals) {
+            if (!h.latitude || !h.longitude) continue;
+            const pos = { lat: h.latitude, lng: h.longitude };
+            bounds.extend(pos);
+
+            const marker = new google.maps.Marker({
+                position: pos,
+                map: map,
+                title: h.name,
+                icon: {
+                    url: "data:image/svg+xml," + encodeURIComponent(
+                        '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">' +
+                        '<circle cx="14" cy="14" r="12" fill="#F87171" stroke="#fff" stroke-width="2"/>' +
+                        '<text x="14" y="18" text-anchor="middle" font-size="14" fill="#fff">🏥</text></svg>'
+                    ),
+                    scaledSize: new google.maps.Size(28, 28),
+                },
+            });
+
+            const infoContent = `
+                <div style="color:#1a1a2e;font-family:Inter,sans-serif;max-width:220px">
+                    <strong>${esc(h.name)}</strong><br>
+                    <span style="color:#666">${esc(h.address || "")}</span><br>
+                    ${h.distance_km ? `<span>📍 ${h.distance_km} km</span><br>` : ""}
+                    ${h.rating ? `<span>⭐ ${h.rating}/5</span>` : ""}
+                </div>`;
+
+            const info = new google.maps.InfoWindow({ content: infoContent });
+            marker.addListener("click", () => info.open(map, marker));
+        }
+    }
+
+    // Fit bounds
+    if (bounds.getNorthEast().equals(bounds.getSouthWest())) {
+        map.setZoom(14);
+    } else {
+        map.fitBounds(bounds, { padding: 40 });
+    }
+}
+
+/* ── Hospital Card Renderer ─────────────────────────────────────── */
+
+function renderHospitalCard(h) {
+    const stars = h.rating ? "⭐".repeat(Math.min(Math.round(h.rating), 5)) : "";
+    const statusBadge = h.open_now === true ? '<span class="open-badge">Open</span>' :
+                        h.open_now === false ? '<span class="closed-badge">Closed</span>' : '';
+    const distText = h.distance_km ? `${h.distance_km} km` : (h.distance || "");
+
+    return `
+        <div class="hospital-card">
+            <div class="hospital-icon">🏥</div>
+            <div class="hospital-info">
+                <div class="hosp-name">${esc(h.name)}</div>
+                <div class="hosp-address">${esc(h.address || "")}</div>
+                <div class="hosp-meta">
+                    ${h.hospital_type ? `<span class="hosp-type">${esc(h.hospital_type)}</span>` : ""}
+                    ${statusBadge}
+                    ${distText ? `<span class="distance-badge">📍 ${esc(distText)}</span>` : ""}
+                    ${h.rating ? ` · ${stars} ${h.rating}/5` : ""}
+                    ${h.review_count ? ` (${h.review_count} reviews)` : ""}
+                </div>
+                <div class="hosp-actions">
+                    ${h.directions_link ? `<a href="${esc(h.directions_link)}" target="_blank" class="action-btn directions-btn">🧭 Get Directions</a>` : ""}
+                    ${h.maps_url ? `<a href="${esc(h.maps_url)}" target="_blank" class="action-btn maps-btn">📍 Open in Maps</a>` : ""}
+                </div>
+            </div>
+        </div>`;
 }
 
 /* ── Feedback ───────────────────────────────────────────────────── */

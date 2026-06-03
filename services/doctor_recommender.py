@@ -1,82 +1,90 @@
 """
-Doctor Recommender — SQLite-backed with comprehensive disease-to-specialist
-mapping and multi-factor ranking.
+Doctor Recommender — Orchestrates specialist mapping, doctor search, and hospital search.
+Geolocation is mandatory. Returns error when location is unavailable.
 """
 from __future__ import annotations
-from services.database import get_doctors
+import logging
+from services.specialist_mapping_service import get_specialist, get_specialist_rarity
+from services.doctor_search_service import search_doctors
+from services.hospital_search_service import search_hospitals
 
-# Comprehensive disease → specialist mapping
-DISEASE_TO_SPECIALIST: dict[str, str] = {
-    "Common Cold": "General Physician",
-    "Influenza": "General Physician",
-    "COVID-19": "Pulmonologist",
-    "Gastroenteritis": "Gastroenterologist",
-    "Migraine": "Neurologist",
-    "Hypertension": "Cardiologist",
-    "Dengue": "General Physician",
-    "Typhoid": "General Physician",
-    "Urinary Tract Infection": "Urologist",
-    "Pneumonia": "Pulmonologist",
-    "Allergy": "General Physician",
-    "Allergic Rhinitis": "ENT Specialist",
-    "Malaria": "General Physician",
-    "Jaundice": "Gastroenterologist",
-    "Anxiety Disorder": "Psychiatrist",
-    "Depression": "Psychiatrist",
-    "Diabetes": "Endocrinologist",
-    "Fungal infection": "Dermatologist",
-    "GERD": "Gastroenterologist",
-    "Chronic Cholestasis": "Gastroenterologist",
-    "Drug Reaction": "General Physician",
-    "Peptic Ulcer Disease": "Gastroenterologist",
-    "AIDS": "Infectious Disease Specialist",
-    "Bronchial Asthma": "Pulmonologist",
-    "Cervical Spondylosis": "Orthopedic Surgeon",
-    "Paralysis (Brain Hemorrhage)": "Neurologist",
-    "Chicken Pox": "General Physician",
-    "Hepatitis A": "Gastroenterologist",
-    "Hepatitis B": "Gastroenterologist",
-    "Hepatitis C": "Gastroenterologist",
-    "Hepatitis D": "Gastroenterologist",
-    "Hepatitis E": "Gastroenterologist",
-    "Alcoholic Hepatitis": "Gastroenterologist",
-    "Tuberculosis": "Pulmonologist",
-    "Heart Attack": "Cardiologist",
-    "Varicose Veins": "Cardiologist",
-    "Hypothyroidism": "Endocrinologist",
-    "Hyperthyroidism": "Endocrinologist",
-    "Hypoglycemia": "Endocrinologist",
-    "Osteoarthritis": "Orthopedic Surgeon",
-    "Arthritis": "Rheumatologist",
-    "Vertigo": "ENT Specialist",
-    "Acne": "Dermatologist",
-    "Psoriasis": "Dermatologist",
-    "Impetigo": "Dermatologist",
-    "Dimorphic Hemorrhoids (Piles)": "General Physician",
-    "Epilepsy": "Neurologist",
-    "Kidney Stones": "Nephrologist",
-    "Chronic Kidney Disease": "Nephrologist",
-    "Irritable Bowel Syndrome": "Gastroenterologist",
-    "Anemia": "General Physician",
-}
+logger = logging.getLogger(__name__)
 
 
-def get_specialist(disease: str) -> str:
-    """Return the specialist type for a disease."""
-    return DISEASE_TO_SPECIALIST.get(disease, "General Physician")
-
-
-def recommend_doctors(disease: str, city: str | None = None) -> dict:
+def recommend_doctors(
+    disease: str,
+    latitude: float | None = None,
+    longitude: float | None = None,
+) -> dict:
     """
-    Return {
-        specialist: str,
-        doctors: [ { name, hospital, city, state, experience_years, rating, consultation_fee, available_days, phone } ]
-    }
+    Recommend doctors for a predicted disease.
+    Geolocation (latitude, longitude) is MANDATORY.
+    Returns error dict when location is unavailable.
     """
+    # Enforce geolocation
+    if not latitude or not longitude:
+        return {
+            "success": False,
+            "error": "Unable to determine your location. Please enable location access and try again.",
+            "specialist": get_specialist(disease),
+            "doctors": [],
+            "hospitals": [],
+        }
+
     specialist = get_specialist(disease)
-    doctors = get_doctors(specialist, city=city, limit=5)
+    rarity = get_specialist_rarity(specialist)
+
+    logger.info(
+        "Recommending doctors: disease=%s, specialist=%s, rarity=%s, lat=%.4f, lng=%.4f",
+        disease, specialist, rarity, latitude, longitude,
+    )
+
+    doctors = search_doctors(
+        specialist,
+        lat=latitude,
+        lng=longitude,
+        limit=5,
+    )
+
+    hospitals = search_hospitals(
+        lat=latitude,
+        lng=longitude,
+        specialty=specialist,
+        limit=5,
+    )
 
     return {
+        "success": True,
         "specialist": specialist,
+        "specialist_rarity": rarity,
         "doctors": doctors,
+        "hospitals": hospitals,
+        "user_location": {
+            "latitude": latitude,
+            "longitude": longitude,
+        },
+    }
+
+
+def recommend_emergency(
+    lat: float | None = None,
+    lng: float | None = None,
+) -> dict:
+    """Recommend emergency hospitals."""
+    if not lat or not lng:
+        return {
+            "success": False,
+            "error": "Location required for emergency hospital search.",
+            "specialist": "Emergency Medicine",
+            "doctors": [],
+            "hospitals": [],
+        }
+
+    hospitals = search_hospitals(lat=lat, lng=lng, is_emergency=True, limit=5)
+    return {
+        "success": True,
+        "specialist": "Emergency Medicine",
+        "doctors": [],
+        "hospitals": hospitals,
+        "user_location": {"latitude": lat, "longitude": lng},
     }

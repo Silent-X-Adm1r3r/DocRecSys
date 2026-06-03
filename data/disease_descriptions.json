@@ -1,0 +1,252 @@
+{
+  "Fungal infection": {
+    "description": "A fungal infection is caused by fungi that can affect the skin, nails, or internal organs. Common types include ringworm, athlete's foot, and candidiasis.",
+    "precautions": ["Keep affected area clean and dry", "Use antifungal cream as prescribed", "Avoid sharing personal items", "Wear loose-fitting breathable clothing"],
+    "severity": "mild"
+  },
+  "Allergy": {
+    "description": "An allergy is an immune system response to a foreign substance (allergen) that is typically not harmful. Symptoms can range from mild to severe.",
+    "precautions": ["Identify and avoid allergens", "Keep antihistamines available", "Wear a mask in dusty environments", "Consult an allergist for testing"],
+    "severity": "mild"
+  },
+  "GERD": {
+    "description": "Gastroesophageal reflux disease (GERD) occurs when stomach acid frequently flows back into the esophagus, causing heartburn and irritation.",
+    "precautions": ["Avoid spicy and fatty foods", "Eat smaller meals", "Don't lie down after eating", "Elevate head while sleeping"],
+    "severity": "moderate"
+  },
+  "Chronic Cholestasis": {
+    "description": "Chronic cholestasis is a condition where bile flow from the liver is reduced or blocked, leading to accumulation of bile acids in the blood.",
+    "precautions": ["Follow prescribed medication", "Avoid alcohol completely", "Get regular liver function tests", "Maintain a low-fat diet"],
+    "severity": "severe"
+  },
+  "Drug Reaction": {
+    "description": "A drug reaction is an unwanted side effect or allergic response to a medication. Severity ranges from mild rashes to life-threatening anaphylaxis.",
+    "precautions": ["Stop the suspected medication immediately", "Inform your doctor about all reactions", "Carry a list of drug allergies", "Seek emergency care for severe reactions"],
+    "severity": "moderate"
+  },
+  "Peptic Ulcer Disease": {
+    "description": "Peptic ulcers are open sores that develop on the inner lining of the stomach and upper small intestine, often caused by H. pylori or NSAIDs.",
+    "precautions": ["Avoid NSAIDs like aspirin and ibuprofen", "Limit alcohol consumption", "Quit smoking", "Eat regular meals and avoid spicy food"],
+    "severity": "moderate"
+  },
+  "AIDS": {
+    "description": "Acquired Immunodeficiency Syndrome (AIDS) is a chronic condition caused by HIV that damages the immune system and interferes with the body's ability to fight infections.",
+    "precautions": ["Take antiretroviral therapy as prescribed", "Practice safe sex", "Get regular CD4 count monitoring", "Maintain good nutrition and hygiene"],
+    "severity": "severe"
+  },
+  "Diabetes": {
+    "description": "Diabetes mellitus is a metabolic disease characterized by high blood sugar levels over a prolonged period due to inadequate insulin production or response.",
+    "precautions": ["Monitor blood sugar regularly", "Follow a balanced diet low in sugar", "Exercise regularly", "Take prescribed medications consistently"],
+    "severity": "moderate"
+  },
+  "Gastroenteritis": {
+    "description": "Gastroenteritis is inflammation of the stomach and intestines, typically resulting from bacterial or viral infection, causing vomiting and diarrhea.",
+    "precautions": ["Stay hydrated with ORS", "Eat light bland foods", "Wash hands frequently", "Avoid contaminated food and water"],
+    "severity": "moderate"
+  },
+  "Bronchial Asthma": {
+    "description": "Bronchial asthma is a chronic inflammatory disease of the airways causing recurrent episodes of wheezing, breathlessness, chest tightness, and coughing.",
+    "precautions": ["Always carry a rescue inhaler", "Avoid known triggers (dust, smoke, cold air)", "Follow your asthma action plan", "Get regular check-ups with your pulmonologist"],
+    "severity": "moderate"
+  },
+  "Hypertension": {
+    "description": "Hypertension (high blood pressure) is a condition where the force of blood against artery walls is consistently too high, increasing risk of heart disease and stroke.",
+    "precautions": ["Reduce salt intake", "Exercise regularly", "Monitor blood pressure at home", "Take prescribed medications without skipping"],
+    "severity": "moderate"
+  },
+  "Migraine": {
+    "description": "Migraine is a neurological condition causing intense, debilitating headaches often accompanied by nausea, vomiting, and sensitivity to light and sound.",
+    "precautions": ["Identify and avoid personal triggers", "Maintain regular sleep patterns", "Stay hydrated", "Keep prescribed pain relief accessible"],
+    "severity": "moderate"
+  },
+  "Cervical Spondylosis": {
+    "description": "Cervical spondylosis is age-related wear and tear of the spinal discs in the neck, which can cause pain, stiffness, and nerve compression.",
+    "precautions": ["Practice good posture", "Do regular neck exercises", "Avoid prolonged computer use without breaks", "Use a supportive pillow while sleeping"],
+    "severity": "moderate"
+  },
+  "Paralysis (Brain Hemorrhage)": {
+    "description": "Brain hemorrhage is bleeding in or around the brain that can lead to paralysis, loss of consciousness, and other severe neurological deficits.",
+    "precautions": ["Seek immediate emergency medical care", "Control blood pressure", "Follow rehabilitation therapy strictly", "Avoid sudden straining activities"],
+    "severity": "severe"
+  },
+  "Jaundice": {
+    "description": "Jaundice is a condition where the skin and whites of the eyes turn yellow due to elevated bilirubin levels, indicating liver, gallbladder, or blood disorders.",
+    "precautions": ["Rest adequately", "Drink plenty of fluids", "Avoid alcohol and fatty foods", "Get liver function tests done"],
+    "severity": "moderate"
+  },
+  "Malaria": {
+    "description": "Malaria is a life-threatening disease caused by Plasmodium parasites transmitted through the bites of infected female Anopheles mosquitoes.",
+    "precautions": ["Use mosquito nets while sleeping", "Apply mosquito repellent", "Take prescribed antimalarial medication", "Eliminate stagnant water near your home"],
+    "severity": "severe"
+  },
+  "Chicken Pox": {
+    "description": "Chickenpox is a highly contagious viral infection caused by the varicella-zoster virus, causing an itchy rash with fluid-filled blisters.",
+    "precautions": ["Isolate the patient to prevent spread", "Keep nails trimmed to avoid scratching", "Use calamine lotion for itching", "Stay hydrated and rest"],
+    "severity": "mild"
+  },
+  "Dengue": {
+    "description": "Dengue fever is a mosquito-borne tropical disease caused by the dengue virus, characterized by high fever, severe headache, and joint pain.",
+    "precautions": ["Stay hydrated and monitor platelet count", "Use mosquito repellent and nets", "Avoid aspirin and NSAIDs", "Seek medical attention if bleeding occurs"],
+    "severity": "severe"
+  },
+  "Typhoid": {
+    "description": "Typhoid fever is a bacterial infection caused by Salmonella typhi, spread through contaminated food and water, causing prolonged fever and gastrointestinal symptoms.",
+    "precautions": ["Complete the full course of antibiotics", "Drink only boiled or purified water", "Maintain strict hand hygiene", "Get vaccinated if in endemic areas"],
+    "severity": "moderate"
+  },
+  "Hepatitis A": {
+    "description": "Hepatitis A is a viral liver infection spread through contaminated food or water, causing inflammation and affecting liver function.",
+    "precautions": ["Get vaccinated", "Wash hands thoroughly before eating", "Avoid raw or undercooked shellfish", "Rest and maintain proper nutrition"],
+    "severity": "moderate"
+  },
+  "Hepatitis B": {
+    "description": "Hepatitis B is a viral infection that attacks the liver and can cause both acute and chronic disease, transmitted through blood and body fluids.",
+    "precautions": ["Get vaccinated", "Practice safe sex", "Don't share needles or personal care items", "Get regular liver function monitoring"],
+    "severity": "severe"
+  },
+  "Hepatitis C": {
+    "description": "Hepatitis C is a viral infection that causes liver inflammation, sometimes leading to serious liver damage, primarily spread through contaminated blood.",
+    "precautions": ["Avoid sharing needles or razors", "Get tested if you received blood transfusions before 1992", "Follow antiviral treatment as prescribed", "Avoid alcohol completely"],
+    "severity": "severe"
+  },
+  "Hepatitis D": {
+    "description": "Hepatitis D is a liver infection caused by the hepatitis D virus (HDV), which requires HBV to replicate. It's the most severe form of viral hepatitis.",
+    "precautions": ["Get hepatitis B vaccination", "Follow prescribed treatment plan", "Avoid alcohol", "Get regular liver monitoring"],
+    "severity": "severe"
+  },
+  "Hepatitis E": {
+    "description": "Hepatitis E is a liver disease caused by the hepatitis E virus, mainly transmitted through contaminated water in areas with poor sanitation.",
+    "precautions": ["Drink only clean purified water", "Maintain proper sanitation", "Avoid raw or undercooked meat", "Rest and stay hydrated"],
+    "severity": "moderate"
+  },
+  "Alcoholic Hepatitis": {
+    "description": "Alcoholic hepatitis is liver inflammation caused by excessive alcohol consumption over a prolonged period, potentially leading to liver failure.",
+    "precautions": ["Stop alcohol consumption immediately", "Follow a nutritious diet", "Take prescribed medications", "Join a support group for alcohol dependence"],
+    "severity": "severe"
+  },
+  "Tuberculosis": {
+    "description": "Tuberculosis (TB) is a bacterial infection caused by Mycobacterium tuberculosis that mainly affects the lungs but can also affect other parts of the body.",
+    "precautions": ["Complete the full course of DOTS therapy", "Cover mouth when coughing", "Ensure good ventilation in living spaces", "Get regular sputum tests"],
+    "severity": "severe"
+  },
+  "Common Cold": {
+    "description": "The common cold is a viral infection of the upper respiratory tract caused by rhinoviruses, characterized by runny nose, sore throat, and cough.",
+    "precautions": ["Rest and drink warm fluids", "Use steam inhalation", "Wash hands frequently", "Avoid cold beverages and ice cream"],
+    "severity": "mild"
+  },
+  "Pneumonia": {
+    "description": "Pneumonia is an infection that inflames the air sacs in one or both lungs, which may fill with fluid, causing cough, fever, and difficulty breathing.",
+    "precautions": ["Complete prescribed antibiotics course", "Get vaccinated (pneumococcal vaccine)", "Rest and stay hydrated", "Avoid smoking and air pollution"],
+    "severity": "severe"
+  },
+  "Dimorphic Hemorrhoids (Piles)": {
+    "description": "Hemorrhoids (piles) are swollen veins in the lower rectum and anus, causing discomfort, pain, and sometimes bleeding during bowel movements.",
+    "precautions": ["Eat high-fiber foods", "Drink plenty of water", "Avoid straining during bowel movements", "Use sitz baths for pain relief"],
+    "severity": "mild"
+  },
+  "Heart Attack": {
+    "description": "A heart attack (myocardial infarction) occurs when blood flow to the heart muscle is blocked, usually by a blood clot, causing tissue damage.",
+    "precautions": ["Call emergency services immediately (112/108)", "Chew an aspirin if not allergic", "Follow cardiac rehabilitation program", "Take prescribed heart medications consistently"],
+    "severity": "severe"
+  },
+  "Varicose Veins": {
+    "description": "Varicose veins are enlarged, twisted veins that usually occur in the legs due to weakened or damaged valves, causing pain and swelling.",
+    "precautions": ["Avoid standing or sitting for long periods", "Elevate legs when resting", "Wear compression stockings", "Exercise regularly to improve circulation"],
+    "severity": "mild"
+  },
+  "Hypothyroidism": {
+    "description": "Hypothyroidism is a condition where the thyroid gland doesn't produce enough thyroid hormones, leading to fatigue, weight gain, and depression.",
+    "precautions": ["Take levothyroxine as prescribed", "Get regular thyroid function tests", "Maintain a balanced diet with iodine", "Exercise regularly"],
+    "severity": "moderate"
+  },
+  "Hyperthyroidism": {
+    "description": "Hyperthyroidism is a condition where the thyroid gland produces too much thyroid hormone, causing rapid heartbeat, weight loss, and nervousness.",
+    "precautions": ["Take prescribed anti-thyroid medication", "Get regular thyroid monitoring", "Avoid excessive iodine intake", "Manage stress with relaxation techniques"],
+    "severity": "moderate"
+  },
+  "Hypoglycemia": {
+    "description": "Hypoglycemia is a condition where blood sugar drops below normal levels, causing shakiness, confusion, and in severe cases, loss of consciousness.",
+    "precautions": ["Carry glucose tablets or candy", "Eat regular meals and snacks", "Monitor blood sugar frequently", "Inform people around you about your condition"],
+    "severity": "moderate"
+  },
+  "Osteoarthritis": {
+    "description": "Osteoarthritis is a degenerative joint disease where the protective cartilage that cushions bone ends wears down, causing pain and stiffness.",
+    "precautions": ["Maintain a healthy weight", "Exercise regularly with low-impact activities", "Use hot/cold therapy for pain relief", "Consider physical therapy"],
+    "severity": "moderate"
+  },
+  "Arthritis": {
+    "description": "Arthritis refers to inflammation of one or more joints, causing pain, swelling, and stiffness that can worsen with age.",
+    "precautions": ["Stay physically active with gentle exercises", "Apply hot or cold packs to affected joints", "Maintain a healthy weight", "Follow prescribed medication regimen"],
+    "severity": "moderate"
+  },
+  "Vertigo": {
+    "description": "Vertigo is a sensation of spinning or dizziness that occurs due to problems in the inner ear or brain, affecting balance and coordination.",
+    "precautions": ["Avoid sudden head movements", "Sit or lie down when feeling dizzy", "Practice vestibular rehabilitation exercises", "Stay hydrated"],
+    "severity": "moderate"
+  },
+  "Acne": {
+    "description": "Acne is a skin condition that occurs when hair follicles become plugged with oil and dead skin cells, causing pimples, blackheads, and whiteheads.",
+    "precautions": ["Wash face twice daily with mild cleanser", "Avoid touching or picking at acne", "Use non-comedogenic skin products", "Stay hydrated and eat a balanced diet"],
+    "severity": "mild"
+  },
+  "Urinary Tract Infection": {
+    "description": "A urinary tract infection (UTI) is an infection in any part of the urinary system, most commonly affecting the bladder and urethra.",
+    "precautions": ["Drink plenty of water", "Urinate frequently and don't hold urine", "Maintain proper hygiene", "Complete the full course of antibiotics"],
+    "severity": "moderate"
+  },
+  "Psoriasis": {
+    "description": "Psoriasis is a chronic autoimmune skin disease that speeds up the life cycle of skin cells, causing thick, silvery scales and itchy, dry, red patches.",
+    "precautions": ["Keep skin moisturized", "Avoid triggers like stress and cold weather", "Use prescribed topical treatments", "Get regular sun exposure in moderation"],
+    "severity": "moderate"
+  },
+  "Impetigo": {
+    "description": "Impetigo is a highly contagious bacterial skin infection forming red sores that rupture, ooze, and form a yellowish-brown crust.",
+    "precautions": ["Keep the affected area clean", "Avoid touching or scratching sores", "Wash hands frequently", "Use prescribed antibiotic ointment"],
+    "severity": "mild"
+  },
+  "COVID-19": {
+    "description": "COVID-19 is a respiratory illness caused by the SARS-CoV-2 virus, ranging from mild symptoms to severe pneumonia requiring hospitalization.",
+    "precautions": ["Isolate and rest", "Monitor oxygen levels with a pulse oximeter", "Stay hydrated", "Seek emergency care if breathing difficulty worsens"],
+    "severity": "moderate"
+  },
+  "Influenza": {
+    "description": "Influenza (flu) is a contagious respiratory illness caused by influenza viruses, causing fever, cough, body aches, and fatigue.",
+    "precautions": ["Rest and drink plenty of fluids", "Take prescribed antiviral medication", "Get annual flu vaccination", "Cover mouth when coughing or sneezing"],
+    "severity": "moderate"
+  },
+  "Anxiety Disorder": {
+    "description": "Anxiety disorder is a mental health condition characterized by persistent, excessive worry and fear that interferes with daily activities.",
+    "precautions": ["Practice relaxation techniques (deep breathing, meditation)", "Exercise regularly", "Limit caffeine and alcohol", "Seek professional counseling or therapy"],
+    "severity": "moderate"
+  },
+  "Depression": {
+    "description": "Depression is a mood disorder that causes persistent feelings of sadness, loss of interest, and can affect how you think, feel, and handle daily activities.",
+    "precautions": ["Seek professional help (therapist or psychiatrist)", "Stay socially connected", "Exercise regularly", "Follow prescribed treatment plan"],
+    "severity": "moderate"
+  },
+  "Kidney Stones": {
+    "description": "Kidney stones are hard deposits of minerals and salts that form inside the kidneys, causing severe pain when passing through the urinary tract.",
+    "precautions": ["Drink at least 2-3 liters of water daily", "Reduce salt and protein intake", "Avoid oxalate-rich foods if prone to calcium stones", "Follow up with a urologist"],
+    "severity": "moderate"
+  },
+  "Chronic Kidney Disease": {
+    "description": "Chronic kidney disease (CKD) is a gradual loss of kidney function over time, eventually requiring dialysis or kidney transplant in advanced stages.",
+    "precautions": ["Control blood pressure and diabetes", "Follow a kidney-friendly diet", "Avoid NSAIDs and nephrotoxic drugs", "Get regular kidney function tests"],
+    "severity": "severe"
+  },
+  "Irritable Bowel Syndrome": {
+    "description": "IBS is a common gastrointestinal disorder affecting the large intestine, causing cramping, bloating, gas, diarrhea, and constipation.",
+    "precautions": ["Identify and avoid trigger foods", "Eat smaller frequent meals", "Manage stress through relaxation", "Increase fiber intake gradually"],
+    "severity": "mild"
+  },
+  "Anemia": {
+    "description": "Anemia is a condition where you lack enough healthy red blood cells to carry adequate oxygen to your body's tissues, causing fatigue and weakness.",
+    "precautions": ["Eat iron-rich foods (spinach, lentils, red meat)", "Take iron supplements if prescribed", "Include vitamin C to improve absorption", "Get regular blood tests"],
+    "severity": "moderate"
+  },
+  "Epilepsy": {
+    "description": "Epilepsy is a neurological disorder characterized by recurrent, unprovoked seizures caused by abnormal electrical activity in the brain.",
+    "precautions": ["Take anti-seizure medications consistently", "Get adequate sleep", "Avoid known seizure triggers", "Carry medical identification"],
+    "severity": "severe"
+  }
+}

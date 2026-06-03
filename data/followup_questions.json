@@ -1,0 +1,86 @@
+{
+  "headache": {
+    "questions": [
+      {"question": "How long have you been experiencing the headache?", "type": "duration", "context": "headache_duration"},
+      {"question": "How would you rate the pain — mild, moderate, or severe?", "type": "severity", "context": "headache_severity"},
+      {"question": "Do you also have any nausea, sensitivity to light, or vision changes?", "type": "more_symptoms", "context": "headache_associated"}
+    ]
+  },
+  "chest_pain": {
+    "questions": [
+      {"question": "Is the chest pain sharp/stabbing or more like pressure/squeezing?", "type": "more_symptoms", "context": "chest_quality"},
+      {"question": "Does the pain radiate to your arm, jaw, or back?", "type": "more_symptoms", "context": "chest_radiation"},
+      {"question": "Are you also experiencing difficulty breathing or sweating?", "type": "more_symptoms", "context": "chest_associated"}
+    ]
+  },
+  "abdominal_pain": {
+    "questions": [
+      {"question": "Where exactly is the pain — upper, lower, left side, or right side of the abdomen?", "type": "more_symptoms", "context": "abdomen_location"},
+      {"question": "Are you also experiencing vomiting, diarrhea, or constipation?", "type": "more_symptoms", "context": "abdomen_associated"},
+      {"question": "How long have you had this abdominal pain?", "type": "duration", "context": "abdomen_duration"}
+    ]
+  },
+  "fever": {
+    "questions": [
+      {"question": "Do you know your temperature? How high is the fever?", "type": "severity", "context": "fever_temperature"},
+      {"question": "How many days have you had the fever?", "type": "duration", "context": "fever_duration"},
+      {"question": "Do you also have a cough, body ache, or sore throat?", "type": "more_symptoms", "context": "fever_associated"}
+    ]
+  },
+  "breathing": {
+    "questions": [
+      {"question": "Is the breathing difficulty constant or does it come and go?", "type": "duration", "context": "breathing_pattern"},
+      {"question": "Does it worsen with physical activity or while lying down?", "type": "more_symptoms", "context": "breathing_trigger"},
+      {"question": "Do you also have chest pain, cough, or wheezing?", "type": "more_symptoms", "context": "breathing_associated"}
+    ]
+  },
+  "skin": {
+    "questions": [
+      {"question": "How long have you had the skin issue?", "type": "duration", "context": "skin_duration"},
+      {"question": "Is it itchy, painful, or neither?", "type": "severity", "context": "skin_sensation"},
+      {"question": "Has it been spreading or changing in appearance?", "type": "more_symptoms", "context": "skin_progression"}
+    ]
+  },
+  "joint_pain": {
+    "questions": [
+      {"question": "Which joints are affected — knees, hips, wrists, or others?", "type": "more_symptoms", "context": "joint_location"},
+      {"question": "Is there any swelling, redness, or warmth in the joints?", "type": "more_symptoms", "context": "joint_inflammation"},
+      {"question": "How long have you been experiencing joint pain?", "type": "duration", "context": "joint_duration"}
+    ]
+  },
+  "digestive": {
+    "questions": [
+      {"question": "Are you experiencing nausea, vomiting, or loss of appetite?", "type": "more_symptoms", "context": "digestive_nausea"},
+      {"question": "How long have you had these digestive symptoms?", "type": "duration", "context": "digestive_duration"},
+      {"question": "Have you noticed any changes in stool color or consistency?", "type": "more_symptoms", "context": "digestive_stool"}
+    ]
+  },
+  "mental_health": {
+    "questions": [
+      {"question": "How long have you been feeling this way?", "type": "duration", "context": "mental_duration"},
+      {"question": "Is it affecting your sleep, appetite, or daily activities?", "type": "more_symptoms", "context": "mental_impact"},
+      {"question": "Have you experienced any physical symptoms like palpitations or breathlessness?", "type": "more_symptoms", "context": "mental_physical"}
+    ]
+  },
+  "urinary": {
+    "questions": [
+      {"question": "Do you experience burning or pain during urination?", "type": "more_symptoms", "context": "urinary_burning"},
+      {"question": "How long have you had these urinary symptoms?", "type": "duration", "context": "urinary_duration"},
+      {"question": "Have you noticed any change in urine color or frequency?", "type": "more_symptoms", "context": "urinary_changes"}
+    ]
+  },
+  "eye": {
+    "questions": [
+      {"question": "Is the vision problem in one eye or both?", "type": "more_symptoms", "context": "eye_laterality"},
+      {"question": "When did the vision changes start?", "type": "duration", "context": "eye_duration"},
+      {"question": "Do you also have headache, eye pain, or sensitivity to light?", "type": "more_symptoms", "context": "eye_associated"}
+    ]
+  },
+  "general": {
+    "questions": [
+      {"question": "How long have you been experiencing these symptoms?", "type": "duration", "context": "general_duration"},
+      {"question": "How severe are your symptoms — mild, moderate, or severe?", "type": "severity", "context": "general_severity"},
+      {"question": "Are there any other symptoms you're experiencing that you haven't mentioned?", "type": "more_symptoms", "context": "general_additional"}
+    ]
+  }
+}
