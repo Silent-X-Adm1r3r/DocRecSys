@@ -404,7 +404,10 @@ function renderEmbeddedMap(mapId, userLocation, doctors, hospitals) {
     const container = document.getElementById(mapId);
     if (!container) return;
 
-    const center = { lat: userLocation.latitude, lng: userLocation.longitude };
+    const centerLat = parseFloat(userLocation.latitude);
+    const centerLng = parseFloat(userLocation.longitude);
+    if (isNaN(centerLat) || isNaN(centerLng)) return;
+    const center = new google.maps.LatLng(centerLat, centerLng);
 
     const map = new google.maps.Map(container, {
         zoom: 13,
@@ -445,8 +448,11 @@ function renderEmbeddedMap(mapId, userLocation, doctors, hospitals) {
     // Doctor markers (green)
     if (doctors) {
         for (const doc of doctors) {
-            if (!doc.latitude || !doc.longitude) continue;
-            const pos = { lat: doc.latitude, lng: doc.longitude };
+            const lat = parseFloat(doc.latitude);
+            const lng = parseFloat(doc.longitude);
+            if (isNaN(lat) || isNaN(lng)) continue;
+            
+            const pos = new google.maps.LatLng(lat, lng);
             bounds.extend(pos);
 
             const marker = new google.maps.Marker({
@@ -479,8 +485,11 @@ function renderEmbeddedMap(mapId, userLocation, doctors, hospitals) {
     // Hospital markers (red)
     if (hospitals) {
         for (const h of hospitals) {
-            if (!h.latitude || !h.longitude) continue;
-            const pos = { lat: h.latitude, lng: h.longitude };
+            const lat = parseFloat(h.latitude);
+            const lng = parseFloat(h.longitude);
+            if (isNaN(lat) || isNaN(lng)) continue;
+            
+            const pos = new google.maps.LatLng(lat, lng);
             bounds.extend(pos);
 
             const marker = new google.maps.Marker({
