@@ -48,12 +48,7 @@ def search_hospitals(
             "distance": f"{distance_km} km" if distance_km else "",
             "latitude": place.get("lat", 0),
             "longitude": place.get("lng", 0),
-            "maps_url": place.get("maps_url", ""),
             "place_id": place.get("place_id", ""),
-            "directions_link": (
-                f"https://www.google.com/maps/dir/?api=1&destination={place.get('lat', 0)},{place.get('lng', 0)}"
-                if place.get("lat") else ""
-            ),
         })
 
     # Sort by distance → rating → reviews

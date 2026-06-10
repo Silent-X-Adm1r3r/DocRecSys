@@ -1,7 +1,7 @@
 """
 Maps Service — Google Maps integration for nearby doctors/hospitals.
 Features: Redis caching, progressive radius search, multi-stage fallback,
-specialist-rarity-aware radius, distance calculation, embedded map data.
+specialist-rarity-aware radius, distance calculation.
 """
 from __future__ import annotations
 import logging, math
@@ -52,9 +52,9 @@ def search_nearby(
         url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
         params = {
             "location": f"{lat},{lng}",
-            "radius": radius_km * 1000,
+            "radius": min(radius_km * 1000, 50000),
             "keyword": keyword,
-            "type": "doctor|hospital|health",
+            "type": "doctor",
             "key": _API_KEY,
         }
         resp = requests.get(url, params=params, timeout=10)
@@ -70,6 +70,11 @@ def search_nearby(
             place_lng = loc.get("lng", 0)
             distance_km = haversine_km(lat, lng, place_lat, place_lng) if place_lat and place_lng else 0
 
+            # Hard distance filter: reject anything outside requested radius
+            if distance_km > radius_km:
+                logger.debug("Rejected place '%s' at %.1f km (radius=%d km)", place.get("name", ""), distance_km, radius_km)
+                continue
+
             results.append({
                 "place_id": place.get("place_id", ""),
                 "name": place.get("name", ""),
@@ -81,7 +86,6 @@ def search_nearby(
                 "distance_km": distance_km,
                 "open_now": place.get("opening_hours", {}).get("open_now"),
                 "types": place.get("types", []),
-                "maps_url": f"https://www.google.com/maps/place/?q=place_id:{place.get('place_id', '')}",
             })
 
         # Sort by distance
@@ -113,7 +117,7 @@ def search_with_fallback(
     from config import MAPS_CACHE_TTL
 
     # Check Redis cache first
-    cached = redis_service.get_maps_cache(specialist, lat, lng)
+    cached = redis_service.get_maps_cache(specialist, lat, lng, radius_km)
     if cached is not None:
         return cached, f"{specialist} (cached)"
 
@@ -138,7 +142,7 @@ def search_with_fallback(
 
             if len(results) >= min_results:
                 # Cache and return
-                redis_service.set_maps_cache(specialist, lat, lng, results, ttl=MAPS_CACHE_TTL)
+                redis_service.set_maps_cache(specialist, lat, lng, radius_km, results, ttl=MAPS_CACHE_TTL)
                 return results, f"{query} (radius={radius}km)"
 
             if results:
@@ -159,7 +163,7 @@ def search_with_fallback(
     deduped.sort(key=lambda x: x.get("distance_km", 999))
 
     if deduped:
-        redis_service.set_maps_cache(specialist, lat, lng, deduped, ttl=MAPS_CACHE_TTL)
+        redis_service.set_maps_cache(specialist, lat, lng, radius_km, deduped, ttl=MAPS_CACHE_TTL)
         winning_query = f"fallback (combined {len(fallback_queries)} queries)"
 
     return deduped[:max_results], winning_query
@@ -181,36 +185,6 @@ def _generate_radii(max_radius_km: int) -> list[int]:
         steps.append(max_radius_km)
     return steps
 
-
-def get_directions(
-    origin_lat: float, origin_lng: float,
-    dest_lat: float, dest_lng: float
-) -> dict | None:
-    """Get driving directions between two points."""
-    if not _API_KEY:
-        return None
-    try:
-        url = "https://maps.googleapis.com/maps/api/directions/json"
-        params = {
-            "origin": f"{origin_lat},{origin_lng}",
-            "destination": f"{dest_lat},{dest_lng}",
-            "mode": "driving",
-            "key": _API_KEY,
-        }
-        resp = requests.get(url, params=params, timeout=10)
-        data = resp.json()
-        if data.get("status") != "OK" or not data.get("routes"):
-            return None
-        route = data["routes"][0]["legs"][0]
-        return {
-            "distance": route.get("distance", {}).get("text", ""),
-            "duration": route.get("duration", {}).get("text", ""),
-            "distance_m": route.get("distance", {}).get("value", 0),
-            "duration_s": route.get("duration", {}).get("value", 0),
-        }
-    except Exception as e:
-        logger.error("Directions API error: %s", e)
-        return None
 
 
 def get_emergency_hospitals(lat: float, lng: float) -> list[dict]:
@@ -237,7 +211,6 @@ def get_place_details(place_id: str) -> dict | None:
         return {
             "phone": result.get("formatted_phone_number", ""),
             "website": result.get("website", ""),
-            "maps_url": result.get("url", ""),
         }
     except Exception as e:
         logger.error("Place Details API error: %s", e)

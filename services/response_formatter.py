@@ -1,6 +1,6 @@
 """
 Response Formatter — Builds structured JSON for all response types.
-Enhanced with embedded map data, distance info, specialist badges.
+Enhanced with distance info, specialist badges.
 """
 from __future__ import annotations
 from services.confidence_service import score_confidence, get_overall_confidence
@@ -104,7 +104,7 @@ def format_response(
         if doctor_info.get("hospitals"):
             result["hospitals"] = doctor_info["hospitals"]
 
-        # Embedded map data for frontend rendering
+        # User location data for distance context
         if doctor_info.get("user_location"):
             result["user_location"] = doctor_info["user_location"]
 

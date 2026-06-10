@@ -1,4 +1,4 @@
-/* ─── DocRecSys Chat Client — Production Enhanced with Embedded Maps ── */
+/* ─── DocRecSys Chat Client — Production Enhanced ── */
 
 const SESSION_ID = crypto.randomUUID();
 const WEBHOOK   = "/webhook";
@@ -11,7 +11,6 @@ const inputEl    = document.getElementById("chat-input");
 let userLat = null;
 let userLng = null;
 let locationGranted = false;
-let mapCounter = 0;
 
 /* ── Navigation ─────────────────────────────────────────────────── */
 
@@ -23,12 +22,11 @@ function startChat() {
     requestLocation();
 
     addBotBubble(
-        "👋 Hello! I'm your AI health assistant powered by **Gemini AI** and medical datasets.\n\n" +
+        "👋 Hello! I'm your AI health assistant powered by **BERT-Based Disease Prediction** and medical datasets.\n\n" +
         "Describe your symptoms in plain language and I'll:\n" +
         "• Analyze them against **800+ diseases**\n" +
         "• Predict probable conditions with confidence scores\n" +
-        "• Recommend specialist doctors near you\n" +
-        "• Show nearby hospitals on an **embedded map**\n\n" +
+        "• Recommend specialist doctors near you\n\n" +
         '**Example:** "I have a headache, fever, and body ache for 3 days."'
     );
     inputEl.focus();
@@ -180,20 +178,11 @@ function renderEmergency(data) {
         hospitalsHtml += `</div></div>`;
     }
 
-    // Embedded map for emergency hospitals
-    let mapHtml = "";
-    if (data.hospitals && data.hospitals.length > 0 && data.user_location) {
-        const mapId = `emap-${++mapCounter}`;
-        mapHtml = `<div class="embedded-map-container"><div id="${mapId}" class="embedded-map"></div></div>`;
-        setTimeout(() => renderEmbeddedMap(mapId, data.user_location, [], data.hospitals), 100);
-    }
-
     card.innerHTML = `
         <div class="emer-title">🚨 ${esc(data.level || "EMERGENCY")} ALERT</div>
         <div class="emer-body">${md(data.message)}</div>
         ${numbersHtml}
         ${hospitalsHtml}
-        ${mapHtml}
         <div class="disclaimer">${md(data.disclaimer || "")}</div>
     `;
     messagesEl.appendChild(card);
@@ -329,7 +318,6 @@ function renderResult(data) {
                             </div>
                             ${ratingText ? `<div class="doc-rating">${stars} ${ratingText}${doc.review_count ? ` (${doc.review_count} reviews)` : ""}</div>` : ""}
                             <div class="doc-actions">
-                                ${doc.maps_url ? `<a href="${esc(doc.maps_url)}" target="_blank" class="action-btn maps-btn">📍 View on Maps</a>` : ""}
                                 ${doc.phone ? `<a href="tel:${esc(doc.phone)}" class="action-btn call-btn">📞 Call</a>` : ""}
                             </div>
                         </div>
@@ -339,31 +327,6 @@ function renderResult(data) {
             html += `<div class="no-results-msg">No doctors found nearby. Try enabling location access.</div>`;
         }
         html += `</div></div>`;
-    }
-
-    /* Hospitals */
-    if (data.hospitals && data.hospitals.length > 0) {
-        html += `<div class="result-section"><div class="label">Nearby Hospitals</div><div class="hospital-cards">`;
-        for (const h of data.hospitals) {
-            html += renderHospitalCard(h);
-        }
-        html += `</div></div>`;
-    }
-
-    /* Embedded Map */
-    const doctors = data.doctor_recommendation ? (data.doctor_recommendation.doctors || []) : [];
-    const hospitals = data.hospitals || [];
-    if ((doctors.length > 0 || hospitals.length > 0) && data.user_location) {
-        const mapId = `map-${++mapCounter}`;
-        html += `<div class="result-section">
-            <div class="label">📍 Nearby Doctors & Hospitals</div>
-            <div class="embedded-map-container">
-                <div id="${mapId}" class="embedded-map" data-map-id="${mapId}"></div>
-            </div>
-        </div>`;
-
-        // Render map after DOM insertion
-        setTimeout(() => renderEmbeddedMap(mapId, data.user_location, doctors, hospitals), 200);
     }
 
     /* Disclaimer */
@@ -392,140 +355,7 @@ function renderResult(data) {
     });
 }
 
-/* ── Embedded Map Rendering ─────────────────────────────────────── */
 
-function renderEmbeddedMap(mapId, userLocation, doctors, hospitals) {
-    if (typeof google === "undefined" || !google.maps) {
-        // Maps JS API not loaded yet — retry
-        setTimeout(() => renderEmbeddedMap(mapId, userLocation, doctors, hospitals), 500);
-        return;
-    }
-
-    const container = document.getElementById(mapId);
-    if (!container) return;
-
-    const centerLat = parseFloat(userLocation.latitude);
-    const centerLng = parseFloat(userLocation.longitude);
-    if (isNaN(centerLat) || isNaN(centerLng)) return;
-    const center = new google.maps.LatLng(centerLat, centerLng);
-
-    const map = new google.maps.Map(container, {
-        zoom: 13,
-        center: center,
-        mapTypeControl: false,
-        streetViewControl: false,
-        fullscreenControl: true,
-        styles: [
-            { elementType: "geometry", stylers: [{ color: "#1d2c4d" }] },
-            { elementType: "labels.text.stroke", stylers: [{ color: "#1a3646" }] },
-            { elementType: "labels.text.fill", stylers: [{ color: "#8ec3b9" }] },
-            { featureType: "water", elementType: "geometry.fill", stylers: [{ color: "#17263c" }] },
-            { featureType: "road", elementType: "geometry", stylers: [{ color: "#304a7d" }] },
-            { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#255d84" }] },
-            { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] },
-        ],
-    });
-
-    // User location marker (blue)
-    new google.maps.Marker({
-        position: center,
-        map: map,
-        title: "Your Location",
-        icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: 10,
-            fillColor: "#3B82F6",
-            fillOpacity: 1,
-            strokeColor: "#ffffff",
-            strokeWeight: 3,
-        },
-        zIndex: 100,
-    });
-
-    const bounds = new google.maps.LatLngBounds();
-    bounds.extend(center);
-
-    // Doctor markers (green)
-    if (doctors) {
-        for (const doc of doctors) {
-            const lat = parseFloat(doc.latitude);
-            const lng = parseFloat(doc.longitude);
-            if (isNaN(lat) || isNaN(lng)) continue;
-            
-            const pos = new google.maps.LatLng(lat, lng);
-            bounds.extend(pos);
-
-            const marker = new google.maps.Marker({
-                position: pos,
-                map: map,
-                title: doc.name,
-                icon: {
-                    path: google.maps.SymbolPath.CIRCLE,
-                    scale: 8,
-                    fillColor: "#6EE7B7",
-                    fillOpacity: 1,
-                    strokeColor: "#ffffff",
-                    strokeWeight: 2,
-                },
-            });
-
-            const infoContent = `
-                <div style="color:#1a1a2e;font-family:Inter,sans-serif;max-width:220px">
-                    <strong>${esc(doc.name)}</strong><br>
-                    <span style="color:#666">${esc(doc.hospital || doc.address || "")}</span><br>
-                    ${doc.distance_km ? `<span>📍 ${doc.distance_km} km</span><br>` : ""}
-                    ${doc.rating ? `<span>⭐ ${doc.rating}/5${doc.review_count ? ` (${doc.review_count})` : ""}</span>` : ""}
-                </div>`;
-
-            const info = new google.maps.InfoWindow({ content: infoContent });
-            marker.addListener("click", () => info.open(map, marker));
-        }
-    }
-
-    // Hospital markers (red)
-    if (hospitals) {
-        for (const h of hospitals) {
-            const lat = parseFloat(h.latitude);
-            const lng = parseFloat(h.longitude);
-            if (isNaN(lat) || isNaN(lng)) continue;
-            
-            const pos = new google.maps.LatLng(lat, lng);
-            bounds.extend(pos);
-
-            const marker = new google.maps.Marker({
-                position: pos,
-                map: map,
-                title: h.name,
-                icon: {
-                    url: "data:image/svg+xml," + encodeURIComponent(
-                        '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">' +
-                        '<circle cx="14" cy="14" r="12" fill="#F87171" stroke="#fff" stroke-width="2"/>' +
-                        '<text x="14" y="18" text-anchor="middle" font-size="14" fill="#fff">🏥</text></svg>'
-                    ),
-                    scaledSize: new google.maps.Size(28, 28),
-                },
-            });
-
-            const infoContent = `
-                <div style="color:#1a1a2e;font-family:Inter,sans-serif;max-width:220px">
-                    <strong>${esc(h.name)}</strong><br>
-                    <span style="color:#666">${esc(h.address || "")}</span><br>
-                    ${h.distance_km ? `<span>📍 ${h.distance_km} km</span><br>` : ""}
-                    ${h.rating ? `<span>⭐ ${h.rating}/5</span>` : ""}
-                </div>`;
-
-            const info = new google.maps.InfoWindow({ content: infoContent });
-            marker.addListener("click", () => info.open(map, marker));
-        }
-    }
-
-    // Fit bounds
-    if (bounds.getNorthEast().equals(bounds.getSouthWest())) {
-        map.setZoom(14);
-    } else {
-        map.fitBounds(bounds, { padding: 40 });
-    }
-}
 
 /* ── Hospital Card Renderer ─────────────────────────────────────── */
 
@@ -547,10 +377,6 @@ function renderHospitalCard(h) {
                     ${distText ? `<span class="distance-badge">📍 ${esc(distText)}</span>` : ""}
                     ${h.rating ? ` · ${stars} ${h.rating}/5` : ""}
                     ${h.review_count ? ` (${h.review_count} reviews)` : ""}
-                </div>
-                <div class="hosp-actions">
-                    ${h.directions_link ? `<a href="${esc(h.directions_link)}" target="_blank" class="action-btn directions-btn">🧭 Get Directions</a>` : ""}
-                    ${h.maps_url ? `<a href="${esc(h.maps_url)}" target="_blank" class="action-btn maps-btn">📍 Open in Maps</a>` : ""}
                 </div>
             </div>
         </div>`;

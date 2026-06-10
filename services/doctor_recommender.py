@@ -46,6 +46,20 @@ def recommend_doctors(
         limit=5,
     )
 
+    if not doctors:
+        return {
+            "success": False,
+            "error": "No nearby specialists found within the selected radius. Please try increasing the search radius.",
+            "specialist": specialist,
+            "specialist_rarity": rarity,
+            "doctors": [],
+            "hospitals": [],
+            "user_location": {
+                "latitude": latitude,
+                "longitude": longitude,
+            },
+        }
+
     hospitals = search_hospitals(
         lat=latitude,
         lng=longitude,

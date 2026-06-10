@@ -587,10 +587,6 @@ body {
     font-size: .68rem; font-weight: 600; text-decoration: none;
     transition: all .2s; cursor: pointer; border: 1px solid var(--border);
 }
-.action-btn.maps-btn { background: rgba(59,130,246,.1); color: var(--accent-2); border-color: rgba(59,130,246,.2); }
-.action-btn.maps-btn:hover { background: rgba(59,130,246,.2); transform: translateY(-1px); }
-.action-btn.directions-btn { background: rgba(110,231,183,.1); color: var(--accent-1); border-color: rgba(110,231,183,.2); }
-.action-btn.directions-btn:hover { background: rgba(110,231,183,.2); transform: translateY(-1px); }
 .action-btn.call-btn { background: rgba(129,140,248,.1); color: var(--accent-3); border-color: rgba(129,140,248,.2); }
 .action-btn.call-btn:hover { background: rgba(129,140,248,.2); transform: translateY(-1px); }
 
@@ -678,27 +674,7 @@ body {
 }
 .location-warning .loc-warn-icon { font-size: 1rem; }
 
-/* ── Embedded Map Container ──────────────────────────────────── */
-.embedded-map-container {
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-    border: 1px solid var(--border);
-    margin-top: .4rem;
-    position: relative;
-}
-.embedded-map {
-    width: 100%;
-    height: 300px;
-    background: var(--bg-secondary);
-}
-.embedded-map-container::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
-}
+
 
 /* ── Distance Badge ──────────────────────────────────────────── */
 .distance-badge {
@@ -792,7 +768,7 @@ body {
 @media (max-width: 768px) {
     .landing-content h1 { font-size: 2.6rem; }
     .features { grid-template-columns: 1fr; gap: 1rem; }
-    .embedded-map { height: 250px; }
+
     .location-status .loc-text { display: none; }
 }
 @media (max-width: 480px) {
@@ -804,7 +780,7 @@ body {
     .chat-header { padding: .7rem 1rem; }
     .chat-input-area { padding: .7rem .8rem; }
     .doctor-card { padding: .6rem .7rem; }
-    .embedded-map { height: 200px; }
+
     .location-error-banner { flex-wrap: wrap; }
     .location-error-banner .loc-error-retry { width: 100%; text-align: center; }
 }

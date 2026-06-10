@@ -175,16 +175,16 @@ def set_prediction_cache(symptoms: list[str], result: dict, ttl: int = 86400):
 
 # ── Maps Cache ──────────────────────────────────────────────────────
 
-def _maps_key(specialist: str, lat: float, lng: float) -> str:
-    """Create maps cache key with 3 decimal place precision (~111m)."""
-    return f"doctor_search:{specialist.lower().replace(' ', '_')}:{lat:.3f}:{lng:.3f}"
+def _maps_key(specialist: str, lat: float, lng: float, radius_km: int = 0) -> str:
+    """Create maps cache key with 3 decimal place precision (~111m) and radius."""
+    return f"doctor_search:{specialist.lower().replace(' ', '_')}:{lat:.3f}:{lng:.3f}:{radius_km}km"
 
 
-def get_maps_cache(specialist: str, lat: float, lng: float) -> list | None:
+def get_maps_cache(specialist: str, lat: float, lng: float, radius_km: int = 0) -> list | None:
     """Check Redis for cached maps search results."""
     if not _available:
         return None
-    key = _maps_key(specialist, lat, lng)
+    key = _maps_key(specialist, lat, lng, radius_km)
     try:
         raw = _client.get(key)
         if raw:
@@ -196,11 +196,13 @@ def get_maps_cache(specialist: str, lat: float, lng: float) -> list | None:
     return None
 
 
-def set_maps_cache(specialist: str, lat: float, lng: float, results: list, ttl: int = 900):
+def set_maps_cache(specialist: str, lat: float, lng: float, radius_km: int = 0, results: list = None, ttl: int = 900):
     """Cache maps search results with 15min TTL."""
     if not _available:
         return
-    key = _maps_key(specialist, lat, lng)
+    if results is None:
+        results = []
+    key = _maps_key(specialist, lat, lng, radius_km)
     try:
         _client.setex(key, ttl, json.dumps(results))
         logger.info("Maps cached: %s (%d results, TTL=%ds)", key, len(results), ttl)

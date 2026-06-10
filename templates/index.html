@@ -32,7 +32,7 @@
             </div>
             <h1>DocRecSys</h1>
             <p class="tagline">AI-Powered Medical Symptom Analysis & Doctor Recommendation</p>
-            <p class="subtitle">Describe your symptoms naturally. Our AI engine powered by Gemini and medical datasets analyzes them against 800+ diseases, predicts conditions, and finds nearby specialists using Google Maps.</p>
+            <p class="subtitle">Describe your symptoms naturally. Our AI engine powered by BERT-Based Disease Prediction and medical datasets analyzes them against 800+ diseases, predicts conditions, and finds nearby specialists.</p>
             <button id="btn-start" class="btn-start" onclick="startChat()">
                 <span>Start Health Check</span>
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10h12m0 0l-4-4m4 4l-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -40,13 +40,13 @@
             <div class="features">
                 <div class="feature-card" id="feature-ai">
                     <div class="feature-icon">🧠</div>
-                    <h3>Gemini AI + ML</h3>
-                    <p>Dual-engine analysis: Gemini AI symptom extraction + ensemble ML across 800+ diseases</p>
+                    <h3>AI-Powered Disease Prediction</h3>
+                    <p>Dual-engine analysis: AI symptom extraction + ensemble ML across 800+ diseases</p>
                 </div>
                 <div class="feature-card" id="feature-doctor">
                     <div class="feature-icon">🩺</div>
                     <h3>Smart Recommendations</h3>
-                    <p>Specialist mapping with Google Maps integration and embedded maps for nearby care</p>
+                    <p>Specialist recommendation for nearby care</p>
                 </div>
                 <div class="feature-card" id="feature-emergency">
                     <div class="feature-icon">🚨</div>
@@ -110,8 +110,7 @@
         </footer>
     </section>
 
-    <!-- Google Maps JavaScript API -->
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ maps_api_key }}&libraries=places" async defer></script>
+    <!-- Maps UI Removed -->
     <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
 </body>
 </html>

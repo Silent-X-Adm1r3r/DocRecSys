@@ -43,7 +43,13 @@ def search_doctors(
 
         logger.info("Doctor search: query=%s, results=%d", query_used, len(results))
 
-        for place in results[:limit]:
+        for place in results:
+            if place.get("distance_km", 0) > radius_km:
+                continue
+
+            if len(maps_doctors) >= limit:
+                break
+
             # Try to get phone number from Place Details
             phone = ""
             details = maps_service.get_place_details(place.get("place_id", ""))
@@ -60,7 +66,6 @@ def search_doctors(
                 "distance_km": place.get("distance_km", 0),
                 "address": place.get("address", ""),
                 "phone": phone,
-                "maps_url": place.get("maps_url", ""),
                 "latitude": place.get("lat", 0),
                 "longitude": place.get("lng", 0),
                 "open_now": place.get("open_now"),
@@ -68,14 +73,13 @@ def search_doctors(
                 "source": "maps",
             })
 
-    # Priority 4: Static dataset fallback (only when Maps fails)
-    if not maps_doctors:
+    # Priority 4: Static dataset fallback (only when location not provided or Maps fails)
+    if not maps_doctors and not (lat and lng):
         logger.info("Maps unavailable or no results — falling back to static dataset")
         db_doctors = get_db_doctors(specialist, limit=limit)
         for doc in db_doctors:
             doc["source"] = "database"
             doc["distance_km"] = None
-            doc["maps_url"] = ""
             doc["latitude"] = None
             doc["longitude"] = None
             doc["review_count"] = 0
